@@ -14,8 +14,8 @@ function Skeleton({ height = 120, delay = 0 }) {
     <div
       style={{
         height,
-        borderRadius: 12,
-        background: 'linear-gradient(90deg, #f0f0ee 25%, #e8e8e5 50%, #f0f0ee 75%)',
+        borderRadius: 14,
+        background: 'linear-gradient(90deg, #111318 25%, #1a1d24 50%, #111318 75%)',
         backgroundSize: '200% 100%',
         animation: `shimmer 1.4s infinite ${delay}ms`,
       }}
@@ -35,7 +35,7 @@ export default function App() {
   const [period, setPeriod] = useState('Maand');
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f9fafb' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0c10' }}>
       <style>{shimmerStyle}</style>
       <Sidebar />
 
@@ -53,11 +53,11 @@ export default function App() {
         {isMock && !isLoading && (
           <div
             style={{
-              background: 'rgba(240,165,0,0.1)',
-              borderBottom: '1px solid rgba(240,165,0,0.25)',
+              background: 'rgba(249,115,22,0.08)',
+              borderBottom: '1px solid rgba(249,115,22,0.20)',
               padding: '8px 32px',
               fontSize: 12,
-              color: '#92620a',
+              color: '#f97316',
               fontWeight: 500,
               display: 'flex',
               alignItems: 'center',
@@ -75,16 +75,16 @@ export default function App() {
             style={{
               margin: '32px',
               padding: '24px',
-              borderRadius: 12,
+              borderRadius: 14,
               background: 'rgba(239,68,68,0.06)',
-              border: '1px solid rgba(239,68,68,0.2)',
+              border: '1px solid rgba(239,68,68,0.18)',
               textAlign: 'center',
             }}
           >
-            <p style={{ fontWeight: 600, color: '#dc2626', marginBottom: 8 }}>
+            <p style={{ fontWeight: 600, color: '#ef4444', marginBottom: 8 }}>
               Kan gegevens niet laden
             </p>
-            <p style={{ color: 'var(--color-muted)', fontSize: 13, marginBottom: 16 }}>
+            <p style={{ color: '#71717a', fontSize: 13, marginBottom: 16 }}>
               Controleer je internetverbinding en API-instellingen.
             </p>
             <button
@@ -93,7 +93,7 @@ export default function App() {
                 padding: '8px 20px',
                 borderRadius: 8,
                 border: 'none',
-                background: 'var(--color-navy)',
+                background: '#f97316',
                 color: '#fff',
                 fontSize: 13,
                 fontWeight: 600,
@@ -110,7 +110,7 @@ export default function App() {
         <main
           style={{
             flex: 1,
-            padding: '24px 32px 32px',
+            padding: '24px',
             display: 'flex',
             flexDirection: 'column',
             gap: 16,

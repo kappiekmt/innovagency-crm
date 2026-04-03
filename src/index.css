@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f9fafb;
-  --color-card: #ffffff;
-  --color-navy: #1a1f4b;
-  --color-gold: #f0a500;
-  --color-success: #16a34a;
-  --color-success-bg: #dcfce7;
-  --color-warning: #d97706;
-  --color-warning-bg: #fef3c7;
-  --color-danger: #dc2626;
-  --color-danger-bg: #fee2e2;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-sidebar-border: #f0f0ef;
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.07);
+  --color-bg: #0a0c10;
+  --color-surface: #111318;
+  --color-card: #111318;
+  --color-sidebar: #0d0f14;
+  --color-accent: #f97316;
+  --color-accent-subtle: rgba(249,115,22,0.12);
+  --color-text-primary: #f4f4f5;
+  --color-text-secondary: #71717a;
+  --color-text-body: #d4d4d8;
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34,197,94,0.10);
+  --color-warning: #eab308;
+  --color-warning-bg: rgba(234,179,8,0.10);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239,68,68,0.10);
+  --color-border: rgba(255,255,255,0.06);
+  --color-divider: rgba(255,255,255,0.05);
+  --color-sidebar-border: rgba(255,255,255,0.05);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.5);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,18 +28,16 @@ html, body, #root { height: 100%; }
 
 body {
   background-color: var(--color-bg);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  color: #111827;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--color-text-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
 }
 
-.font-display { font-family: 'Playfair Display', Georgia, serif; }
-
 .card {
   background: var(--color-card);
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
   transition: box-shadow 0.2s ease;
@@ -56,7 +59,7 @@ body {
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
 
 .tooltip-wrapper { position: relative; }
 .tooltip-wrapper:hover .tooltip-text {
@@ -69,8 +72,9 @@ body {
   left: 100%;
   top: 50%;
   transform: translateX(4px) translateY(-50%);
-  background: #111827;
-  color: #fff;
+  background: #1c1f26;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #f4f4f5;
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 6px;
@@ -88,5 +92,5 @@ body {
   top: 50%;
   transform: translateY(-50%);
   border: 5px solid transparent;
-  border-right-color: #111827;
+  border-right-color: #1c1f26;
 }

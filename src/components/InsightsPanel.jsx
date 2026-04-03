@@ -17,19 +17,18 @@ function formatNumber(value, decimals = 2) {
 }
 
 function generateInsights(data) {
-  const { meta, googleAds, analytics, summary } = data;
+  const { meta, googleAds, analytics } = data;
   const insights = [];
 
-  // 1. Meta CPA vs Google Ads CPA
   if (meta.cpa > 0 && googleAds.cpa > 0) {
     const ratio = googleAds.cpa / meta.cpa;
     if (ratio > 3) {
       insights.push({
         type: 'Aandachtspunt',
         icon: AlertTriangle,
-        iconColor: '#f59e0b',
-        bg: 'rgba(245,158,11,0.07)',
-        border: 'rgba(245,158,11,0.3)',
+        iconColor: '#eab308',
+        bg: 'rgba(234,179,8,0.06)',
+        border: 'rgba(234,179,8,0.20)',
         text: `Google Ads CPA (${formatEuro(googleAds.cpa)}) is ${formatNumber(ratio, 1)}× hoger dan Meta CPA (${formatEuro(meta.cpa)}). Overweeg budgetoptimalisatie richting Meta voor een lagere acquisitiekosten.`,
       });
     } else {
@@ -37,14 +36,13 @@ function generateInsights(data) {
         type: 'Positief Signaal',
         icon: TrendingUp,
         iconColor: '#22c55e',
-        bg: 'rgba(34,197,94,0.07)',
-        border: 'rgba(34,197,94,0.3)',
+        bg: 'rgba(34,197,94,0.06)',
+        border: 'rgba(34,197,94,0.18)',
         text: `Meta CPA (${formatEuro(meta.cpa)}) en Google Ads CPA (${formatEuro(googleAds.cpa)}) zijn goed in balans. Beide kanalen presteren efficiënt binnen de doelstelling.`,
       });
     }
   }
 
-  // 2. Budget concentration vs conversions
   const totalSpend = meta.spend + googleAds.spend;
   const totalConversions = meta.conversions + googleAds.conversions + analytics.conversions;
 
@@ -57,23 +55,22 @@ function generateInsights(data) {
         type: 'Aandachtspunt',
         icon: AlertTriangle,
         iconColor: '#ef4444',
-        bg: 'rgba(239,68,68,0.07)',
-        border: 'rgba(239,68,68,0.3)',
+        bg: 'rgba(239,68,68,0.06)',
+        border: 'rgba(239,68,68,0.18)',
         text: `Google Ads neemt ${formatNumber(gadsSpendPct, 0)}% van het budget in beslag maar genereert slechts ${formatNumber(gadsConvPct, 0)}% van de conversies. Dit wijst op een budgetallocatie-inefficiëntie.`,
       });
     } else {
       insights.push({
         type: 'Aanbeveling',
         icon: Info,
-        iconColor: '#1a1f4b',
-        bg: 'rgba(26,31,75,0.05)',
-        border: 'rgba(26,31,75,0.15)',
+        iconColor: '#f97316',
+        bg: 'rgba(249,115,22,0.06)',
+        border: 'rgba(249,115,22,0.18)',
         text: `Google Ads (${formatNumber(gadsSpendPct, 0)}% budget) levert ${formatNumber(gadsConvPct, 0)}% van de conversies — budgetverdeling is in lijn met rendement. Geen directe actie vereist.`,
       });
     }
   }
 
-  // 3. Conversion rate vs benchmark
   const BENCHMARK_CR = 0.38;
   if (analytics.conversionRate > 0) {
     if (analytics.conversionRate > BENCHMARK_CR) {
@@ -81,17 +78,17 @@ function generateInsights(data) {
         type: 'Positief Signaal',
         icon: TrendingUp,
         iconColor: '#22c55e',
-        bg: 'rgba(34,197,94,0.07)',
-        border: 'rgba(34,197,94,0.3)',
+        bg: 'rgba(34,197,94,0.06)',
+        border: 'rgba(34,197,94,0.18)',
         text: `De organische conversieratio (${formatNumber(analytics.conversionRate, 2)}%) ligt boven het vorige periode gemiddelde van ${formatNumber(BENCHMARK_CR, 2)}%. De website presteert beter in het omzetten van bezoekers.`,
       });
     } else {
       insights.push({
         type: 'Aandachtspunt',
         icon: AlertTriangle,
-        iconColor: '#f59e0b',
-        bg: 'rgba(245,158,11,0.07)',
-        border: 'rgba(245,158,11,0.3)',
+        iconColor: '#eab308',
+        bg: 'rgba(234,179,8,0.06)',
+        border: 'rgba(234,179,8,0.20)',
         text: `De conversieratio (${formatNumber(analytics.conversionRate, 2)}%) is licht gedaald ten opzichte van de vorige periode (${formatNumber(BENCHMARK_CR, 2)}%). Analyseer de landingspagina's voor verbeterpunten.`,
       });
     }
@@ -108,20 +105,22 @@ export default function InsightsPanel({ data }) {
     <div
       className="animate-in animate-delay-5"
       style={{
-        background: '#fff',
-        borderRadius: 10,
-        border: '1px solid #e5e7eb',
-        borderLeft: '3px solid #f0a500',
+        background: '#111318',
+        borderRadius: 14,
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderLeft: '3px solid #f97316',
         padding: '20px 24px',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
       }}
     >
       <h2
         style={{
-          fontSize: 14,
-          fontWeight: 700,
-          color: 'var(--color-navy)',
+          fontSize: 13,
+          fontWeight: 500,
+          color: '#71717a',
           marginBottom: 16,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
           display: 'flex',
           alignItems: 'center',
           gap: 8,
@@ -147,8 +146,8 @@ export default function InsightsPanel({ data }) {
                 <Icon size={14} style={{ color: insight.iconColor, flexShrink: 0 }} strokeWidth={2.2} />
                 <span
                   style={{
-                    fontSize: 10,
-                    fontWeight: 700,
+                    fontSize: 11,
+                    fontWeight: 600,
                     letterSpacing: '0.07em',
                     textTransform: 'uppercase',
                     color: insight.iconColor,
@@ -157,7 +156,7 @@ export default function InsightsPanel({ data }) {
                   {insight.type}
                 </span>
               </div>
-              <p style={{ fontSize: 12.5, lineHeight: 1.55, color: '#374151' }}>
+              <p style={{ fontSize: 12.5, lineHeight: 1.55, color: '#d4d4d8' }}>
                 {insight.text}
               </p>
             </div>

@@ -29,28 +29,46 @@ function TrendBadge({ current, previous, invertColors = false }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 3,
-      padding: '3px 8px', borderRadius: 20,
+      padding: '4px 10px', borderRadius: 20,
       fontSize: 11, fontWeight: 600,
-      background: isGood ? 'var(--color-success-bg)' : 'var(--color-danger-bg)',
-      color: isGood ? 'var(--color-success)' : 'var(--color-danger)',
+      textTransform: 'uppercase',
+      background: isGood ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+      color: isGood ? '#22c55e' : '#ef4444',
     }}>
-      {isPositive ? '↑' : '↓'} {Math.abs(pct).toFixed(1)}% vs vorige maand
+      {isPositive ? '↑' : '↓'} {Math.abs(pct).toFixed(1)}%
     </span>
   );
 }
 
-function KPICard({ icon: Icon, label, value, trend, iconColor, delay }) {
+function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay }) {
   return (
     <div
       className="card animate-in"
-      style={{ padding: '22px 24px', animationDelay: `${delay}ms` }}
+      style={{ padding: '20px', animationDelay: `${delay}ms`, position: 'relative', overflow: 'hidden' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <p style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>{label}</p>
-        <Icon size={16} style={{ color: iconColor }} strokeWidth={1.8} />
+      {/* Subtle glow */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: 60,
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.08) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+        <p style={{ fontSize: 12, color: '#71717a', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          {label}
+        </p>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          background: accentBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Icon size={16} style={{ color: iconColor }} strokeWidth={1.8} />
+        </div>
       </div>
       <p style={{
-        fontSize: 28, fontWeight: 700, color: '#111827',
+        fontSize: 36, fontWeight: 700, color: '#f4f4f5',
         lineHeight: 1, marginBottom: 12, fontVariantNumeric: 'tabular-nums',
         letterSpacing: '-0.5px',
       }}>
@@ -66,29 +84,29 @@ export default function KPICards({ data }) {
   const { totalSpend, totalConversions, avgCpa, conversionRate } = data.summary;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
       <KPICard
         icon={Euro} label="Totale Uitgaven"
         value={formatEuro(totalSpend)}
-        iconColor="#1a1f4b" delay={80}
+        iconColor="#f97316" accentBg="rgba(249,115,22,0.12)" delay={80}
         trend={<TrendBadge current={totalSpend} previous={PREV.totalSpend} />}
       />
       <KPICard
         icon={ShoppingCart} label="Totale Conversies"
         value={formatNumber(totalConversions)}
-        iconColor="#16a34a" delay={160}
+        iconColor="#22c55e" accentBg="rgba(34,197,94,0.12)" delay={160}
         trend={<TrendBadge current={totalConversions} previous={PREV.totalConversions} />}
       />
       <KPICard
         icon={TrendingUp} label="Gemiddelde CPA"
         value={formatEuro(avgCpa)}
-        iconColor="#d97706" delay={240}
+        iconColor="#eab308" accentBg="rgba(234,179,8,0.12)" delay={240}
         trend={<TrendBadge current={avgCpa} previous={PREV.avgCpa} invertColors />}
       />
       <KPICard
         icon={Percent} label="Conversieratio"
         value={`${formatNumber(conversionRate, 2)}%`}
-        iconColor="#1a1f4b" delay={320}
+        iconColor="#3b82f6" accentBg="rgba(59,130,246,0.12)" delay={320}
         trend={<TrendBadge current={conversionRate} previous={PREV.conversionRate} />}
       />
     </div>

@@ -16,21 +16,21 @@ function MetricRow({ label, value, last }) {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '10px 0',
-      borderBottom: last ? 'none' : '1px solid #f3f4f6',
+      borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.04)',
     }}>
-      <span style={{ fontSize: 13, color: '#6b7280' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ fontSize: 13, color: '#71717a' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#d4d4d8', fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </span>
     </div>
   );
 }
 
-function PlatformCard({ name, dotColor, metrics, badge, badgeStyle, delay }) {
+function PlatformCard({ name, dotColor, metrics, badge, badgeBg, badgeColor, delay }) {
   return (
     <div
       className="card animate-in"
-      style={{ padding: '20px 22px', animationDelay: `${delay}ms` }}
+      style={{ padding: '20px', animationDelay: `${delay}ms` }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -38,12 +38,13 @@ function PlatformCard({ name, dotColor, metrics, badge, badgeStyle, delay }) {
             width: 8, height: 8, borderRadius: '50%',
             background: dotColor, display: 'inline-block', flexShrink: 0,
           }} />
-          <span style={{ fontWeight: 600, fontSize: 14, color: '#111827' }}>{name}</span>
+          <span style={{ fontWeight: 600, fontSize: 14, color: '#f4f4f5' }}>{name}</span>
         </div>
         <span style={{
-          padding: '3px 10px', borderRadius: 20,
-          fontSize: 11, fontWeight: 600,
-          ...badgeStyle,
+          padding: '4px 10px', borderRadius: 6, height: 24,
+          display: 'inline-flex', alignItems: 'center',
+          fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+          background: badgeBg, color: badgeColor,
         }}>
           {badge}
         </span>
@@ -63,11 +64,11 @@ export default function PlatformCards({ data }) {
   const { meta, googleAds, analytics } = data;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
       <PlatformCard
         name="Meta Ads" dotColor="#1877f2" delay={160}
         badge="Beste CPA 🏆"
-        badgeStyle={{ background: '#fef3c7', color: '#d97706' }}
+        badgeBg="rgba(234,179,8,0.10)" badgeColor="#eab308"
         metrics={[
           { label: 'Uitgaven',   value: formatEuro(meta.spend) },
           { label: 'Conversies', value: formatNumber(meta.conversions) },
@@ -78,7 +79,7 @@ export default function PlatformCards({ data }) {
       <PlatformCard
         name="Google Ads" dotColor="#fbbc04" delay={240}
         badge="Hoogste bereik"
-        badgeStyle={{ background: '#f3f4f6', color: '#374151' }}
+        badgeBg="rgba(255,255,255,0.06)" badgeColor="#71717a"
         metrics={[
           { label: 'Uitgaven',   value: formatEuro(googleAds.spend) },
           { label: 'Conversies', value: formatNumber(googleAds.conversions) },
@@ -87,9 +88,9 @@ export default function PlatformCards({ data }) {
         ]}
       />
       <PlatformCard
-        name="Organisch" dotColor="#16a34a" delay={320}
+        name="Organisch" dotColor="#22c55e" delay={320}
         badge="Geen kosten"
-        badgeStyle={{ background: '#dcfce7', color: '#16a34a' }}
+        badgeBg="rgba(34,197,94,0.10)" badgeColor="#22c55e"
         metrics={[
           { label: 'Sessies',               value: formatNumber(analytics.sessions) },
           { label: 'Conversies',            value: formatNumber(analytics.conversions) },

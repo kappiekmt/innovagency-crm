@@ -34,18 +34,18 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
     <header
       className="animate-in animate-delay-0"
       style={{
-        background: '#fff',
-        borderBottom: '1px solid #f0f0ef',
-        padding: '24px 32px 20px',
+        background: '#0d0f14',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        padding: '20px 24px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         {/* Left */}
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: '#111827', lineHeight: 1.15, marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.15, marginBottom: 4 }}>
             {getGreeting()}, Zitcomfort 👋
           </h1>
-          <p style={{ color: '#9ca3af', fontSize: 13 }}>
+          <p style={{ color: '#71717a', fontSize: 13 }}>
             Prestatierapport — {getDutchMonth()}
           </p>
         </div>
@@ -53,11 +53,11 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
         {/* Right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           {/* Last updated */}
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>
+          <span style={{ fontSize: 12, color: '#71717a' }}>
             Bijgewerkt: {formatTime(lastUpdated)}
           </span>
 
-          {/* Period toggle — 7D / 30D style */}
+          {/* Period toggle */}
           <div style={{ display: 'flex', gap: 4 }}>
             {['Week', 'Maand'].map((p) => (
               <button
@@ -65,16 +65,16 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
                 onClick={() => onPeriodChange(p)}
                 style={{
                   padding: '6px 14px',
-                  borderRadius: 7,
+                  borderRadius: 8,
                   border: '1px solid',
-                  borderColor: period === p ? '#1a1f4b' : '#e5e7eb',
+                  borderColor: period === p ? '#f97316' : 'rgba(255,255,255,0.12)',
                   cursor: 'pointer',
                   fontSize: 12,
                   fontWeight: period === p ? 600 : 400,
                   fontFamily: 'inherit',
                   transition: 'all 0.15s ease',
-                  background: period === p ? '#1a1f4b' : '#fff',
-                  color: period === p ? '#fff' : '#6b7280',
+                  background: period === p ? 'rgba(249,115,22,0.12)' : 'transparent',
+                  color: period === p ? '#f97316' : '#71717a',
                 }}
               >
                 {p}
@@ -88,17 +88,17 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
             disabled={isLoading}
             title="Vernieuwen"
             style={{
-              width: 34, height: 34,
-              borderRadius: 7,
-              border: '1px solid #e5e7eb',
-              background: '#fff',
+              width: 32, height: 32,
+              borderRadius: 8,
+              border: 'none',
+              background: 'rgba(255,255,255,0.05)',
               cursor: isLoading ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#6b7280',
+              color: '#71717a',
               transition: 'background 0.15s ease',
             }}
-            onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = '#f9fafb'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}
+            onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
           >
             <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
           </button>
@@ -108,18 +108,19 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
             onClick={handleExport}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 16px',
-              borderRadius: 7,
+              padding: '0 16px',
+              height: 36,
+              borderRadius: 8,
               border: 'none',
-              background: '#1a1f4b',
+              background: '#f97316',
               color: '#fff',
-              fontSize: 12, fontWeight: 600,
+              fontSize: 14, fontWeight: 600,
               fontFamily: 'inherit',
               cursor: 'pointer',
-              transition: 'background 0.15s ease',
+              transition: 'filter 0.15s ease',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#252b5e'}
-            onMouseLeave={e => e.currentTarget.style.background = '#1a1f4b'}
+            onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+            onMouseLeave={e => e.currentTarget.style.filter = 'none'}
           >
             <Download size={13} />
             Exporteren
@@ -130,10 +131,12 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
       {toast && (
         <div style={{
           position: 'fixed', bottom: 24, right: 24,
-          background: '#111827', color: '#fff',
+          background: '#1c1f26',
+          border: '1px solid rgba(255,255,255,0.08)',
+          color: '#f4f4f5',
           padding: '10px 18px', borderRadius: 9,
           fontSize: 13, fontWeight: 500, zIndex: 100,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
           animation: 'fadeInUp 0.3s ease',
         }}>
           Exportfunctie komt binnenkort beschikbaar
