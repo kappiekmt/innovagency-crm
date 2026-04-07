@@ -60,6 +60,18 @@ export function useDashboardData(clientId = '') {
 
       setIsMock(anyMock);
       setLastUpdated(new Date());
+
+      // Save snapshot to Supabase for MoM tracking (only real data)
+      if (!anyMock && clientId) {
+        const summary = {
+          totalSpend,
+          totalConversions,
+          avgCpa: parseFloat(avgCpa.toFixed(2)),
+          conversionRate: analytics.conversionRate ?? 0,
+        };
+        axios.post(`${BASE}/api/snapshot`, { clientId, data: { meta, googleAds, analytics, summary } })
+          .catch(err => console.warn('[snapshot] Failed to save:', err.message));
+      }
     } catch (err) {
       console.error('[useDashboardData] fetch error:', err.message);
       setIsError(true);

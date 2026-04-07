@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { getClient } from '../config/clients';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { useMoMData } from '../hooks/useMoMData';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import KPICards from '../components/KPICards';
@@ -43,6 +44,7 @@ export default function ClientDashboard() {
 
 function ClientDashboardInner({ client }) {
   const { data, isLoading, isError, isMock, lastUpdated, refetch } = useDashboardData(client.id);
+  const { momData } = useMoMData(client.id);
   const [period, setPeriod] = useState('Maand');
 
   return (
@@ -114,7 +116,7 @@ function ClientDashboardInner({ client }) {
             </>
           ) : data ? (
             <>
-              <KPICards data={data} clientColor={client.color} />
+              <KPICards data={data} clientColor={client.color} momData={momData} />
               <PlatformCards data={data} />
               <InsightsPanel data={data} clientColor={client.color} />
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>

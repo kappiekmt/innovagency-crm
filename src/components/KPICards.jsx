@@ -13,12 +13,6 @@ function formatNumber(value, decimals = 0) {
   }).format(value);
 }
 
-const PREV = {
-  totalSpend: 17200,
-  totalConversions: 140,
-  avgCpa: 122.86,
-  conversionRate: 0.38,
-};
 
 function TrendBadge({ current, previous, invertColors = false }) {
   if (!previous) return null;
@@ -79,16 +73,18 @@ function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay, 
   );
 }
 
-export default function KPICards({ data, clientColor = '#6C00EE' }) {
+export default function KPICards({ data, clientColor = '#6C00EE', momData = null }) {
   if (!data) return null;
   const { totalSpend, totalConversions, avgCpa, conversionRate } = data.summary;
 
-  // Convert hex to rgb for rgba usage
   const r = parseInt(clientColor.slice(1, 3), 16);
   const g = parseInt(clientColor.slice(3, 5), 16);
   const b = parseInt(clientColor.slice(5, 7), 16);
   const clientAccentBg = `rgba(${r},${g},${b},0.12)`;
   const clientGlow = `rgba(${r},${g},${b},0.08)`;
+
+  // Use real MoM previous month data when available
+  const prev = momData?.previous ?? null;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
@@ -97,25 +93,25 @@ export default function KPICards({ data, clientColor = '#6C00EE' }) {
         value={formatEuro(totalSpend)}
         iconColor={clientColor} accentBg={clientAccentBg} delay={80}
         glowColor={clientGlow}
-        trend={<TrendBadge current={totalSpend} previous={PREV.totalSpend} />}
+        trend={<TrendBadge current={totalSpend} previous={prev?.totalSpend} />}
       />
       <KPICard
         icon={ShoppingCart} label="Totale Conversies"
         value={formatNumber(totalConversions)}
         iconColor="#22c55e" accentBg="rgba(34,197,94,0.12)" delay={160}
-        trend={<TrendBadge current={totalConversions} previous={PREV.totalConversions} />}
+        trend={<TrendBadge current={totalConversions} previous={prev?.totalConversions} />}
       />
       <KPICard
         icon={TrendingUp} label="Gemiddelde CPA"
         value={formatEuro(avgCpa)}
         iconColor="#eab308" accentBg="rgba(234,179,8,0.12)" delay={240}
-        trend={<TrendBadge current={avgCpa} previous={PREV.avgCpa} invertColors />}
+        trend={<TrendBadge current={avgCpa} previous={prev?.avgCpa} invertColors />}
       />
       <KPICard
         icon={Percent} label="Conversieratio"
         value={`${formatNumber(conversionRate, 2)}%`}
         iconColor="#3b82f6" accentBg="rgba(59,130,246,0.12)" delay={320}
-        trend={<TrendBadge current={conversionRate} previous={PREV.conversionRate} />}
+        trend={<TrendBadge current={conversionRate} previous={prev?.conversionRate} />}
       />
     </div>
   );
