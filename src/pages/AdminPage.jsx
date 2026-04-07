@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { clients } from '../config/clients';
-import { LayoutDashboard, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, ArrowRight, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0c10', display: 'flex', flexDirection: 'column' }}>
@@ -12,19 +14,36 @@ export default function AdminPage() {
         background: '#0d0f14',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         padding: '20px 32px',
-        display: 'flex', alignItems: 'center', gap: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: 8,
-          background: 'rgba(249,115,22,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <LayoutDashboard size={16} color="#6C00EE" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'rgba(108,0,238,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <LayoutDashboard size={16} color="#6C00EE" />
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 15, color: '#f4f4f5', lineHeight: 1.2 }}>InnovaIgency</p>
+            <p style={{ fontSize: 11, color: '#71717a' }}>Dashboard beheer</p>
+          </div>
         </div>
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 15, color: '#f4f4f5', lineHeight: 1.2 }}>InnovaIgency</p>
-          <p style={{ fontSize: 11, color: '#71717a' }}>Dashboard beheer</p>
-        </div>
+
+        <button
+          onClick={() => { logout(); navigate('/login'); }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: 12, color: '#52525b', background: 'none',
+            border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            padding: '6px 10px', borderRadius: 8, transition: 'color 0.15s, background 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f4f4f5'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#52525b'; e.currentTarget.style.background = 'none'; }}
+        >
+          <LogOut size={14} />
+          Uitloggen
+        </button>
       </header>
 
       {/* Body */}

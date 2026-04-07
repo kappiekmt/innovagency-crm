@@ -8,7 +8,9 @@ import {
   Lock,
   Headphones,
   ChevronLeft,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard',             active: true,  locked: false },
@@ -20,6 +22,7 @@ const navItems = [
 
 export default function Sidebar({ client }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const color = client?.color ?? '#6C00EE';
   const initials = client?.initials ?? '??';
   const name = client?.name ?? '';
@@ -150,19 +153,35 @@ export default function Sidebar({ client }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fullName}</p>
-            <button
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                fontSize: 11, color: '#71717a', background: 'none',
-                border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
-                transition: 'color 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = color}
-              onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
-            >
-              <Headphones size={10} />
-              Support
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: 11, color: '#71717a', background: 'none',
+                  border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+                  transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = color}
+                onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
+              >
+                <Headphones size={10} />
+                Support
+              </button>
+              <button
+                onClick={() => { logout(); navigate(`/login/${client?.id ?? ''}`); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: 11, color: '#71717a', background: 'none',
+                  border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+                  transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
+              >
+                <LogOut size={10} />
+                Uitloggen
+              </button>
+            </div>
           </div>
         </div>
       </div>
