@@ -42,7 +42,7 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         {/* Left */}
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.15, marginBottom: 4 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.15, marginBottom: 4 }}>
             {getGreeting()}, Zitcomfort 👋
           </h1>
           <p style={{ color: '#71717a', fontSize: 13 }}>
