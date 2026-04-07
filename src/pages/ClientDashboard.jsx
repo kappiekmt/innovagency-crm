@@ -114,9 +114,9 @@ function ClientDashboardInner({ client }) {
             </>
           ) : data ? (
             <>
-              <KPICards data={data} />
+              <KPICards data={data} clientColor={client.color} />
               <PlatformCards data={data} />
-              <InsightsPanel data={data} />
+              <InsightsPanel data={data} clientColor={client.color} />
               <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <TrendChart data={data} />
                 <BudgetDonut data={data} />

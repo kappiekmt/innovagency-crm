@@ -16,7 +16,10 @@ function formatNumber(value, decimals = 2) {
   }).format(value);
 }
 
-function generateInsights(data) {
+function generateInsights(data, clientColor = '#6C00EE') {
+  const r = parseInt(clientColor.slice(1, 3), 16);
+  const g = parseInt(clientColor.slice(3, 5), 16);
+  const b = parseInt(clientColor.slice(5, 7), 16);
   const { meta, googleAds, analytics } = data;
   const insights = [];
 
@@ -63,9 +66,9 @@ function generateInsights(data) {
       insights.push({
         type: 'Aanbeveling',
         icon: Info,
-        iconColor: '#6C00EE',
-        bg: 'rgba(108,0,238,0.06)',
-        border: 'rgba(108,0,238,0.18)',
+        iconColor: clientColor,
+        bg: `rgba(${r},${g},${b},0.06)`,
+        border: `rgba(${r},${g},${b},0.18)`,
         text: `Google Ads (${formatNumber(gadsSpendPct, 0)}% budget) levert ${formatNumber(gadsConvPct, 0)}% van de conversies — budgetverdeling is in lijn met rendement. Geen directe actie vereist.`,
       });
     }
@@ -97,9 +100,9 @@ function generateInsights(data) {
   return insights.slice(0, 3);
 }
 
-export default function InsightsPanel({ data }) {
+export default function InsightsPanel({ data, clientColor = '#6C00EE' }) {
   if (!data) return null;
-  const insights = generateInsights(data);
+  const insights = generateInsights(data, clientColor);
 
   return (
     <div
@@ -108,7 +111,7 @@ export default function InsightsPanel({ data }) {
         background: '#111318',
         borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.06)',
-        borderLeft: '3px solid #6C00EE',
+        borderLeft: `3px solid ${clientColor}`,
         padding: '20px 24px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
       }}

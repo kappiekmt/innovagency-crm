@@ -40,7 +40,7 @@ function TrendBadge({ current, previous, invertColors = false }) {
   );
 }
 
-function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay }) {
+function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay, glowColor }) {
   return (
     <div
       className="card animate-in"
@@ -50,7 +50,7 @@ function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay }
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 60,
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(108,0,238,0.08) 0%, transparent 70%)',
+        background: `radial-gradient(ellipse at 50% 0%, ${glowColor ?? 'rgba(108,0,238,0.08)'} 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
 
@@ -79,16 +79,24 @@ function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay }
   );
 }
 
-export default function KPICards({ data }) {
+export default function KPICards({ data, clientColor = '#6C00EE' }) {
   if (!data) return null;
   const { totalSpend, totalConversions, avgCpa, conversionRate } = data.summary;
+
+  // Convert hex to rgb for rgba usage
+  const r = parseInt(clientColor.slice(1, 3), 16);
+  const g = parseInt(clientColor.slice(3, 5), 16);
+  const b = parseInt(clientColor.slice(5, 7), 16);
+  const clientAccentBg = `rgba(${r},${g},${b},0.12)`;
+  const clientGlow = `rgba(${r},${g},${b},0.08)`;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
       <KPICard
         icon={Euro} label="Totale Uitgaven"
         value={formatEuro(totalSpend)}
-        iconColor="#6C00EE" accentBg="rgba(108,0,238,0.12)" delay={80}
+        iconColor={clientColor} accentBg={clientAccentBg} delay={80}
+        glowColor={clientGlow}
         trend={<TrendBadge current={totalSpend} previous={PREV.totalSpend} />}
       />
       <KPICard
