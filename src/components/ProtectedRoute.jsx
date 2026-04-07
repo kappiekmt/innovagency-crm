@@ -11,6 +11,8 @@ export default function ProtectedRoute({ children, role, clientId }) {
   }
 
   if (role === 'client') {
+    // Admins can access all client dashboards
+    if (session.role === 'admin') return children;
     if (session.role !== 'client' || session.clientId !== clientId) {
       return <Navigate to={`/login/${clientId}`} replace />;
     }
