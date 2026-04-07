@@ -22,7 +22,7 @@ const navItems = [
 
 export default function Sidebar({ client }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
   const color = client?.color ?? '#6C00EE';
   const initials = client?.initials ?? '??';
   const name = client?.name ?? '';
@@ -168,7 +168,7 @@ export default function Sidebar({ client }) {
                 Support
               </button>
               <button
-                onClick={() => { logout(); navigate(`/login/${client?.id ?? ''}`); }}
+                onClick={() => { signOut(); navigate(`/login/${client?.id ?? ''}`); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 4,
                   fontSize: 11, color: '#71717a', background: 'none',

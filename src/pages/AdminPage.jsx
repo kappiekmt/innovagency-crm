@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0c10', display: 'flex', flexDirection: 'column' }}>
@@ -31,7 +31,7 @@ export default function AdminPage() {
         </div>
 
         <button
-          onClick={() => { logout(); navigate('/login'); }}
+          onClick={() => { signOut(); navigate('/login'); }}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, color: '#52525b', background: 'none',

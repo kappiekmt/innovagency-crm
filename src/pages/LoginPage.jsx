@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getClient } from '../config/clients';
-import { adminCredentials, clientCredentials } from '../config/auth';
 
 export default function LoginPage() {
   const { clientId } = useParams();
@@ -19,23 +18,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
 
-  const { loginAdmin, loginClient } = useAuth();
+  const { signIn, session } = useAuth();
   const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!session.role) return;
+    if (session.role === 'admin') navigate('/', { replace: true });
+    else navigate(`/client/${session.clientId}`, { replace: true });
+  }, [session]);
+
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!email || !password) { setError('Vul je e-mailadres en wachtwoord in.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Voer een geldig e-mailadres in.'); return; }
-
-    if (isAdmin) {
-      if (email === adminCredentials.email && password === adminCredentials.password) {
-        loginAdmin(); navigate('/');
-      } else { setError('Onjuiste inloggegevens.'); }
-    } else {
-      const creds = clientCredentials[clientId];
-      if (creds && email === creds.email && password === creds.password) {
-        loginClient(clientId); navigate(`/client/${clientId}`);
-      } else { setError('Onjuiste inloggegevens.'); }
+    try {
+      await signIn(email, password);
+      // Navigation handled by the useEffect above once session updates
+    } catch (err) {
+      setError('Onjuiste inloggegevens.');
     }
   }
 

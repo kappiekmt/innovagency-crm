@@ -1,43 +1,61 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
-function loadSession() {
-  try {
-    const raw = localStorage.getItem('dashboard_session');
-    return raw ? JSON.parse(raw) : { role: null, clientId: null };
-  } catch {
-    return { role: null, clientId: null };
-  }
-}
-
-function saveSession(session) {
-  localStorage.setItem('dashboard_session', JSON.stringify(session));
-}
-
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(loadSession);
+  const [session, setSession]   = useState(null);   // Supabase session
+  const [profile, setProfile]   = useState(null);   // { role, client_id }
+  const [loading, setLoading]   = useState(true);
 
-  function loginAdmin() {
-    const s = { role: 'admin', clientId: null };
-    setSession(s);
-    saveSession(s);
+  async function fetchProfile(userId) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role, client_id')
+      .eq('id', userId)
+      .single();
+    if (error) { console.error('[AuthContext] fetchProfile:', error.message); return null; }
+    return data;
   }
 
-  function loginClient(clientId) {
-    const s = { role: 'client', clientId };
-    setSession(s);
-    saveSession(s);
+  useEffect(() => {
+    // Load initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      if (session) setProfile(await fetchProfile(session.user.id));
+      setLoading(false);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      if (session) {
+        setProfile(await fetchProfile(session.user.id));
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function signIn(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   }
 
-  function logout() {
-    const s = { role: null, clientId: null };
-    setSession(s);
-    saveSession(s);
+  async function signOut() {
+    await supabase.auth.signOut();
   }
+
+  // Derived auth state (same shape ProtectedRoute expects)
+  const authSession = {
+    role:     profile?.role     ?? null,
+    clientId: profile?.client_id ?? null,
+  };
 
   return (
-    <AuthContext.Provider value={{ session, loginAdmin, loginClient, logout }}>
+    <AuthContext.Provider value={{ session: authSession, profile, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
