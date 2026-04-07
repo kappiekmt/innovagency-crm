@@ -10,10 +10,10 @@ export default function LoginPage() {
   const isAdmin = !clientId;
   const client = clientId ? getClient(clientId) : null;
 
-  const accentColor = isAdmin ? '#6C00EE' : (client?.color ?? '#6C00EE');
-  const r = parseInt(accentColor.slice(1, 3), 16);
-  const g = parseInt(accentColor.slice(3, 5), 16);
-  const b = parseInt(accentColor.slice(5, 7), 16);
+  const accent = isAdmin ? '#6C00EE' : (client?.color ?? '#6C00EE');
+  const r = parseInt(accent.slice(1, 3), 16);
+  const g = parseInt(accent.slice(3, 5), 16);
+  const b = parseInt(accent.slice(5, 7), 16);
 
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +22,7 @@ export default function LoginPage() {
   const { loginAdmin, loginClient } = useAuth();
   const navigate = useNavigate();
 
-  function handleSignIn(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     if (!email || !password) { setError('Vul je e-mailadres en wachtwoord in.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Voer een geldig e-mailadres in.'); return; }
@@ -42,134 +42,153 @@ export default function LoginPage() {
   if (clientId && !client) return null;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center" style={{ background: '#0a0c10' }}>
-      <div
-        className="w-full max-w-sm rounded-3xl p-8 flex flex-col items-center"
-        style={{
-          background: `linear-gradient(160deg, rgba(${r},${g},${b},0.07) 0%, #0d0f14 40%)`,
-          border: '1px solid rgba(255,255,255,0.07)',
-          boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
-        }}
-      >
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0c10',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 380,
+        background: '#0d0f14',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 16,
+        padding: '40px 36px',
+        boxShadow: '0 8px 48px rgba(0,0,0,0.5)',
+      }}>
+
         {/* Icon */}
-        <div
-          className="flex items-center justify-center w-14 h-14 rounded-2xl mb-6"
-          style={{
-            background: '#111318',
-            boxShadow: `0 4px 24px rgba(${r},${g},${b},0.25)`,
-          }}
-        >
-          <LogIn className="w-7 h-7" style={{ color: accentColor }} />
+        <div style={{
+          width: 44, height: 44,
+          borderRadius: 12,
+          background: `rgba(${r},${g},${b},0.12)`,
+          border: `1px solid rgba(${r},${g},${b},0.22)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 24,
+        }}>
+          <LogIn size={20} color={accent} strokeWidth={1.8} />
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-semibold mb-2 text-center" style={{ color: '#f4f4f5' }}>
-          Inloggen met e-mail
-        </h2>
-        <p className="text-sm mb-6 text-center" style={{ color: '#71717a' }}>
+        <p style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 4, lineHeight: 1.2 }}>
+          {isAdmin ? 'Beheerder inloggen' : `${client.name}`}
+        </p>
+        <p style={{ fontSize: 13, color: '#71717a', marginBottom: 32, lineHeight: 1.5 }}>
           {isAdmin
-            ? 'Toegang tot het InnovaIgency beheerderspaneel'
-            : `Toegang tot het ${client.name} dashboard`}
+            ? 'Inloggen bij InnovaIgency dashboard beheer'
+            : `Inloggen bij het ${client.name} dashboard`}
         </p>
 
-        {/* Inputs */}
-        <div className="w-full flex flex-col gap-3 mb-2">
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
           {/* Email */}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#52525b' }}>
-              <Mail className="w-4 h-4" />
-            </span>
+          <div style={{ position: 'relative' }}>
+            <Mail size={15} strokeWidth={1.8} style={{
+              position: 'absolute', left: 12, top: '50%',
+              transform: 'translateY(-50%)', color: '#52525b', pointerEvents: 'none',
+            }} />
             <input
-              placeholder="E-mailadres"
               type="email"
+              placeholder="E-mailadres"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
+              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.5)`}
               onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-              className="w-full pl-10 pr-3 py-2 rounded-xl text-sm focus:outline-none placeholder:text-[#3f3f46] transition"
-              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.08)', color: '#f4f4f5' }}
+              style={{
+                width: '100%',
+                padding: '10px 12px 10px 38px',
+                background: '#111318',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 10,
+                color: '#f4f4f5',
+                fontSize: 13,
+                fontFamily: 'inherit',
+                outline: 'none',
+                transition: 'border-color 0.15s',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#52525b' }}>
-              <Lock className="w-4 h-4" />
-            </span>
+          <div style={{ position: 'relative' }}>
+            <Lock size={15} strokeWidth={1.8} style={{
+              position: 'absolute', left: 12, top: '50%',
+              transform: 'translateY(-50%)', color: '#52525b', pointerEvents: 'none',
+            }} />
             <input
-              placeholder="Wachtwoord"
               type="password"
+              placeholder="Wachtwoord"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
+              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.5)`}
               onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-              className="w-full pl-10 pr-3 py-2 rounded-xl text-sm focus:outline-none placeholder:text-[#3f3f46] transition"
-              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.08)', color: '#f4f4f5' }}
+              style={{
+                width: '100%',
+                padding: '10px 12px 10px 38px',
+                background: '#111318',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 10,
+                color: '#f4f4f5',
+                fontSize: 13,
+                fontFamily: 'inherit',
+                outline: 'none',
+                transition: 'border-color 0.15s',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
 
-          {/* Error + forgot password */}
-          <div className="w-full flex items-center justify-between">
+          {/* Error + forgot */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 20 }}>
             {error
-              ? <span className="text-xs" style={{ color: '#ef4444' }}>{error}</span>
+              ? <span style={{ fontSize: 12, color: '#ef4444' }}>{error}</span>
               : <span />}
             <button
               type="button"
-              className="text-xs font-medium hover:underline"
-              style={{ color: '#52525b' }}
-              onMouseEnter={e => e.currentTarget.style.color = accentColor}
+              style={{
+                fontSize: 12, color: '#52525b', background: 'none',
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                padding: 0, transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#a3a3a3'}
               onMouseLeave={e => e.currentTarget.style.color = '#52525b'}
             >
               Wachtwoord vergeten?
             </button>
           </div>
-        </div>
 
-        {/* Submit */}
-        <button
-          onClick={handleSignIn}
-          className="w-full font-medium py-2 rounded-xl cursor-pointer transition mb-4 mt-2"
-          style={{
-            background: `linear-gradient(to bottom, rgba(${r},${g},${b},0.9), rgba(${r},${g},${b},0.65))`,
-            color: '#fff',
-            fontSize: 14,
-            boxShadow: `0 2px 16px rgba(${r},${g},${b},0.3)`,
-          }}
-          onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.12)'}
-          onMouseLeave={e => e.currentTarget.style.filter = 'none'}
-        >
-          Inloggen
-        </button>
+          {/* Submit */}
+          <button
+            type="submit"
+            style={{
+              marginTop: 4,
+              width: '100%',
+              padding: '11px',
+              background: accent,
+              border: 'none',
+              borderRadius: 10,
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'filter 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+            onMouseLeave={e => e.currentTarget.style.filter = 'none'}
+          >
+            Inloggen
+          </button>
+        </form>
 
-        {/* Divider */}
-        <div className="flex items-center w-full my-2">
-          <div className="flex-grow border-t border-dashed" style={{ borderColor: 'rgba(255,255,255,0.08)' }} />
-          <span className="mx-3 text-xs" style={{ color: '#3f3f46' }}>Of inloggen met</span>
-          <div className="flex-grow border-t border-dashed" style={{ borderColor: 'rgba(255,255,255,0.08)' }} />
-        </div>
-
-        {/* Social buttons */}
-        <div className="flex gap-3 w-full justify-center mt-2">
-          {[
-            { src: 'https://www.svgrepo.com/show/475656/google-color.svg', alt: 'Google' },
-            { src: 'https://www.svgrepo.com/show/448224/facebook.svg',     alt: 'Facebook' },
-            { src: 'https://www.svgrepo.com/show/511330/apple-173.svg',    alt: 'Apple' },
-          ].map(({ src, alt }) => (
-            <button
-              key={alt}
-              className="flex items-center justify-center w-12 h-12 rounded-xl transition grow"
-              style={{ background: '#111318', border: '1px solid rgba(255,255,255,0.08)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = '#111318'}
-            >
-              <img src={src} alt={alt} className="w-6 h-6" />
-            </button>
-          ))}
-        </div>
-
-        {/* Branding */}
-        <p className="text-xs mt-6" style={{ color: '#27272a' }}>
-          Aangedreven door InnovaIgency
+        {/* Footer */}
+        <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 32, textAlign: 'center' }}>
+          InnovaIgency — Dashboard Platform
         </p>
       </div>
     </div>
