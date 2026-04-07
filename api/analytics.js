@@ -14,16 +14,20 @@ const MOCK_DATA = {
   ],
 };
 
+function clientEnv(clientId, key) {
+  const prefix = clientId ? clientId.toUpperCase().replace(/-/g, '_') + '_' : '';
+  return process.env[`${prefix}${key}`] ?? process.env[key];
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const {
-    GA4_PROPERTY_ID,
-    GA4_CLIENT_EMAIL,
-    GA4_PRIVATE_KEY,
-  } = process.env;
+  const clientId = req.query?.client ?? '';
+  const GA4_PROPERTY_ID = clientEnv(clientId, 'GA4_PROPERTY_ID');
+  const GA4_CLIENT_EMAIL = clientEnv(clientId, 'GA4_CLIENT_EMAIL');
+  const GA4_PRIVATE_KEY = clientEnv(clientId, 'GA4_PRIVATE_KEY');
 
   if (!GA4_PROPERTY_ID || !GA4_CLIENT_EMAIL || !GA4_PRIVATE_KEY) {
     return res.status(200).json(MOCK_DATA);

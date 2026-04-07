@@ -16,15 +16,19 @@ const MOCK_DATA = {
   ],
 };
 
+function clientEnv(clientId, key) {
+  const prefix = clientId ? clientId.toUpperCase().replace(/-/g, '_') + '_' : '';
+  return process.env[`${prefix}${key}`] ?? process.env[key];
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const {
-    META_ACCESS_TOKEN,
-    META_AD_ACCOUNT_ID,
-  } = process.env;
+  const clientId = req.query?.client ?? '';
+  const META_ACCESS_TOKEN = clientEnv(clientId, 'META_ACCESS_TOKEN');
+  const META_AD_ACCOUNT_ID = clientEnv(clientId, 'META_AD_ACCOUNT_ID');
 
   if (!META_ACCESS_TOKEN || !META_AD_ACCOUNT_ID) {
     return res.status(200).json(MOCK_DATA);

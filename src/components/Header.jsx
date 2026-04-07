@@ -22,7 +22,7 @@ function formatTime(date) {
   return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange }) {
+export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange, clientName = 'Zitcomfort', clientColor = '#f97316' }) {
   const [toast, setToast] = useState(false);
 
   function handleExport() {
@@ -43,7 +43,7 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
         {/* Left */}
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.15, marginBottom: 4 }}>
-            {getGreeting()}, Zitcomfort 👋
+            {getGreeting()}, {clientName} 👋
           </h1>
           <p style={{ color: '#71717a', fontSize: 13 }}>
             Prestatierapport — {getDutchMonth()}
@@ -67,14 +67,14 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
                   padding: '6px 14px',
                   borderRadius: 8,
                   border: '1px solid',
-                  borderColor: period === p ? '#f97316' : 'rgba(255,255,255,0.12)',
+                  borderColor: period === p ? clientColor : 'rgba(255,255,255,0.12)',
                   cursor: 'pointer',
                   fontSize: 12,
                   fontWeight: period === p ? 600 : 400,
                   fontFamily: 'inherit',
                   transition: 'all 0.15s ease',
-                  background: period === p ? 'rgba(249,115,22,0.12)' : 'transparent',
-                  color: period === p ? '#f97316' : '#71717a',
+                  background: period === p ? `${clientColor}1f` : 'transparent',
+                  color: period === p ? clientColor : '#71717a',
                 }}
               >
                 {p}
@@ -112,7 +112,7 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
               height: 36,
               borderRadius: 8,
               border: 'none',
-              background: '#f97316',
+              background: clientColor,
               color: '#fff',
               fontSize: 14, fontWeight: 600,
               fontFamily: 'inherit',

@@ -16,18 +16,22 @@ const MOCK_DATA = {
   ],
 };
 
+function clientEnv(clientId, key) {
+  const prefix = clientId ? clientId.toUpperCase().replace(/-/g, '_') + '_' : '';
+  return process.env[`${prefix}${key}`] ?? process.env[key];
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const {
-    GOOGLE_ADS_CLIENT_ID,
-    GOOGLE_ADS_CLIENT_SECRET,
-    GOOGLE_ADS_REFRESH_TOKEN,
-    GOOGLE_ADS_DEVELOPER_TOKEN,
-    GOOGLE_ADS_CUSTOMER_ID,
-  } = process.env;
+  const clientId = req.query?.client ?? '';
+  const GOOGLE_ADS_CLIENT_ID = clientEnv(clientId, 'GOOGLE_ADS_CLIENT_ID');
+  const GOOGLE_ADS_CLIENT_SECRET = clientEnv(clientId, 'GOOGLE_ADS_CLIENT_SECRET');
+  const GOOGLE_ADS_REFRESH_TOKEN = clientEnv(clientId, 'GOOGLE_ADS_REFRESH_TOKEN');
+  const GOOGLE_ADS_DEVELOPER_TOKEN = clientEnv(clientId, 'GOOGLE_ADS_DEVELOPER_TOKEN');
+  const GOOGLE_ADS_CUSTOMER_ID = clientEnv(clientId, 'GOOGLE_ADS_CUSTOMER_ID');
 
   if (
     !GOOGLE_ADS_CLIENT_ID ||

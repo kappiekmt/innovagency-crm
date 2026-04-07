@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   BarChart2,
@@ -6,28 +7,24 @@ import {
   Target,
   Lock,
   Headphones,
+  ChevronLeft,
 } from 'lucide-react';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard',           active: true,  locked: false },
-  { icon: BarChart2,       label: 'Campagne Details',    active: false, locked: true  },
-  { icon: FileText,        label: 'Maandrapport',        active: false, locked: true  },
-  { icon: Image,           label: 'Advertentie Overzicht', active: false, locked: true },
-  { icon: Target,          label: 'Doelen & KPIs',       active: false, locked: true  },
+  { icon: LayoutDashboard, label: 'Dashboard',             active: true,  locked: false },
+  { icon: BarChart2,       label: 'Campagne Details',      active: false, locked: true  },
+  { icon: FileText,        label: 'Maandrapport',          active: false, locked: true  },
+  { icon: Image,           label: 'Advertentie Overzicht', active: false, locked: true  },
+  { icon: Target,          label: 'Doelen & KPIs',         active: false, locked: true  },
 ];
 
-const ZitcomfortLogo = () => (
-  <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="#f97316" fillOpacity="0.15" />
-    <path
-      d="M8 22h16M10 22v-6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6M12 14v-2a4 4 0 0 1 8 0v2"
-      stroke="#f97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
-    />
-    <path d="M16 10V8" stroke="#f97316" strokeWidth="1.8" strokeLinecap="round" />
-  </svg>
-);
+export default function Sidebar({ client }) {
+  const navigate = useNavigate();
+  const color = client?.color ?? '#f97316';
+  const initials = client?.initials ?? '??';
+  const name = client?.name ?? '';
+  const fullName = client?.fullName ?? '';
 
-export default function Sidebar() {
   return (
     <aside
       style={{
@@ -40,12 +37,20 @@ export default function Sidebar() {
         flexShrink: 0,
       }}
     >
-      {/* Logo */}
+      {/* Logo / client name */}
       <div style={{ height: 60, padding: '0 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <ZitcomfortLogo />
+        <div style={{
+          width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+          background: `${color}26`,
+          border: `1px solid ${color}33`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, fontWeight: 700, color,
+        }}>
+          {initials}
+        </div>
         <div>
           <p style={{ fontWeight: 700, fontSize: 14, color: '#f4f4f5', lineHeight: 1.2 }}>
-            Zitcomfort
+            {name}
           </p>
           <p style={{ fontSize: 10, color: '#71717a', marginTop: 1 }}>
             by InnovaIgency
@@ -75,11 +80,11 @@ export default function Sidebar() {
                 padding: '0 10px',
                 height: 40,
                 borderRadius: 8,
-                border: active ? 'none' : 'none',
-                borderLeft: active ? '2px solid #f97316' : '2px solid transparent',
+                border: 'none',
+                borderLeft: active ? `2px solid ${color}` : '2px solid transparent',
                 cursor: locked ? 'default' : 'pointer',
-                background: active ? 'rgba(249,115,22,0.10)' : 'transparent',
-                color: active ? '#f97316' : locked ? '#3f3f46' : '#71717a',
+                background: active ? `${color}1a` : 'transparent',
+                color: active ? color : locked ? '#3f3f46' : '#71717a',
                 fontSize: 13,
                 fontWeight: active ? 600 : 400,
                 fontFamily: 'inherit',
@@ -108,21 +113,43 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      {/* Back to admin */}
+      <div style={{ padding: '0 10px 8px' }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            width: '100%',
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '0 10px', height: 36,
+            borderRadius: 8, border: 'none',
+            background: 'transparent',
+            color: '#71717a', fontSize: 12,
+            fontFamily: 'inherit', cursor: 'pointer',
+            transition: 'color 0.15s, background 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#d4d4d8'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#71717a'; e.currentTarget.style.background = 'transparent'; }}
+        >
+          <ChevronLeft size={14} />
+          Alle klanten
+        </button>
+      </div>
+
       {/* Footer */}
       <div style={{ padding: '12px 14px 18px' }}>
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', marginBottom: 12 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: '50%',
-            background: 'rgba(249,115,22,0.12)',
-            border: '1px solid rgba(249,115,22,0.20)',
+            background: `${color}1f`,
+            border: `1px solid ${color}33`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 700, color: '#f97316', flexShrink: 0,
+            fontSize: 11, fontWeight: 700, color, flexShrink: 0,
           }}>
-            ZC
+            {initials}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5' }}>Zitcomfort B.V.</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fullName}</p>
             <button
               style={{
                 display: 'flex', alignItems: 'center', gap: 4,
@@ -130,7 +157,7 @@ export default function Sidebar() {
                 border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
                 transition: 'color 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.color = '#f97316'}
+              onMouseEnter={e => e.currentTarget.style.color = color}
               onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
             >
               <Headphones size={10} />

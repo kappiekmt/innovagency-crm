@@ -15,7 +15,7 @@ function mergeWeekly(meta, googleAds, analytics) {
   }));
 }
 
-export function useDashboardData() {
+export function useDashboardData(clientId = '') {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -26,11 +26,12 @@ export function useDashboardData() {
   const fetchAll = useCallback(async () => {
     setIsLoading(true);
     setIsError(false);
+    const params = clientId ? `?client=${clientId}` : '';
     try {
       const [metaRes, gadsRes, ga4Res] = await Promise.all([
-        axios.get(`${BASE}/api/meta`),
-        axios.get(`${BASE}/api/google-ads`),
-        axios.get(`${BASE}/api/analytics`),
+        axios.get(`${BASE}/api/meta${params}`),
+        axios.get(`${BASE}/api/google-ads${params}`),
+        axios.get(`${BASE}/api/analytics${params}`),
       ]);
 
       const meta = metaRes.data;
@@ -65,7 +66,7 @@ export function useDashboardData() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [clientId]);
 
   useEffect(() => {
     fetchAll();
