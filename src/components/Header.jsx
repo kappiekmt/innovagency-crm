@@ -22,7 +22,7 @@ function formatTime(date) {
   return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange, clientName = 'Zitcomfort', clientColor = '#f97316' }) {
+export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange, clientName = 'Zitcomfort', clientColor = '#6C00EE' }) {
   const [toast, setToast] = useState(false);
 
   function handleExport() {

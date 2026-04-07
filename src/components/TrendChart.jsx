@@ -90,8 +90,8 @@ export default function TrendChart({ data }) {
         <AreaChart data={data.weekly} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="metaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f97316" stopOpacity={0.20} />
-              <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+              <stop offset="5%" stopColor="#6C00EE" stopOpacity={0.20} />
+              <stop offset="95%" stopColor="#6C00EE" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gadsGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
@@ -122,10 +122,10 @@ export default function TrendChart({ data }) {
             type="monotone"
             dataKey="meta"
             name="Meta Ads"
-            stroke="#f97316"
+            stroke="#6C00EE"
             strokeWidth={2.2}
             fill="url(#metaGrad)"
-            dot={{ r: 4, fill: '#f97316', strokeWidth: 0 }}
+            dot={{ r: 4, fill: '#6C00EE', strokeWidth: 0 }}
             activeDot={{ r: 6 }}
             animationDuration={800}
           />

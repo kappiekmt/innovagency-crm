@@ -20,7 +20,7 @@ const navItems = [
 
 export default function Sidebar({ client }) {
   const navigate = useNavigate();
-  const color = client?.color ?? '#f97316';
+  const color = client?.color ?? '#6C00EE';
   const initials = client?.initials ?? '??';
   const name = client?.name ?? '';
   const fullName = client?.fullName ?? '';

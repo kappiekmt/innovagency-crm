@@ -19,7 +19,7 @@ export default function AdminPage() {
           background: 'rgba(249,115,22,0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <LayoutDashboard size={16} color="#f97316" />
+          <LayoutDashboard size={16} color="#6C00EE" />
         </div>
         <div>
           <p style={{ fontWeight: 700, fontSize: 15, color: '#f4f4f5', lineHeight: 1.2 }}>InnovaIgency</p>

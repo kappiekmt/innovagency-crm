@@ -13,7 +13,7 @@ function formatNumber(value, decimals = 1) {
   }).format(value);
 }
 
-const COLORS = ['#f97316', '#3b82f6'];
+const COLORS = ['#6C00EE', '#3b82f6'];
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;

@@ -4,7 +4,7 @@ export const clients = [
     name: 'Zitcomfort',
     fullName: 'Zitcomfort B.V.',
     initials: 'ZC',
-    color: '#f97316',
+    color: '#6C00EE',
   },
   {
     id: 'landgoed-bourtange',

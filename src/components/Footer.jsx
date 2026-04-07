@@ -21,7 +21,7 @@ export default function Footer() {
           background: 'none', border: 'none', cursor: 'pointer',
           fontFamily: 'inherit', padding: 0, transition: 'color 0.15s ease',
         }}
-        onMouseEnter={e => e.currentTarget.style.color = '#f97316'}
+        onMouseEnter={e => e.currentTarget.style.color = '#6C00EE'}
         onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
       >
         Vragen over dit rapport? Neem contact op

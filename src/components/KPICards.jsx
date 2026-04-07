@@ -50,7 +50,7 @@ function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay }
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 60,
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(108,0,238,0.08) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -88,7 +88,7 @@ export default function KPICards({ data }) {
       <KPICard
         icon={Euro} label="Totale Uitgaven"
         value={formatEuro(totalSpend)}
-        iconColor="#f97316" accentBg="rgba(249,115,22,0.12)" delay={80}
+        iconColor="#6C00EE" accentBg="rgba(108,0,238,0.12)" delay={80}
         trend={<TrendBadge current={totalSpend} previous={PREV.totalSpend} />}
       />
       <KPICard

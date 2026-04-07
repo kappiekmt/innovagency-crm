@@ -66,7 +66,7 @@ function ClientDashboardInner({ client }) {
             background: 'rgba(249,115,22,0.08)',
             borderBottom: '1px solid rgba(249,115,22,0.20)',
             padding: '8px 32px',
-            fontSize: 12, color: '#f97316', fontWeight: 500,
+            fontSize: 12, color: '#6C00EE', fontWeight: 500,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span>⚠️</span>

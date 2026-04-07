@@ -63,9 +63,9 @@ function generateInsights(data) {
       insights.push({
         type: 'Aanbeveling',
         icon: Info,
-        iconColor: '#f97316',
-        bg: 'rgba(249,115,22,0.06)',
-        border: 'rgba(249,115,22,0.18)',
+        iconColor: '#6C00EE',
+        bg: 'rgba(108,0,238,0.06)',
+        border: 'rgba(108,0,238,0.18)',
         text: `Google Ads (${formatNumber(gadsSpendPct, 0)}% budget) levert ${formatNumber(gadsConvPct, 0)}% van de conversies — budgetverdeling is in lijn met rendement. Geen directe actie vereist.`,
       });
     }
@@ -108,7 +108,7 @@ export default function InsightsPanel({ data }) {
         background: '#111318',
         borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.06)',
-        borderLeft: '3px solid #f97316',
+        borderLeft: '3px solid #6C00EE',
         padding: '20px 24px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
       }}
