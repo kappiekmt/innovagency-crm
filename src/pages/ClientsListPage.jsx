@@ -9,8 +9,11 @@ function getWeekStart() {
   const d = new Date();
   const day = d.getDay();
   d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
+  d.setHours(12, 0, 0, 0); // noon avoids DST edge cases
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 }
 
 function fmtEur(n) { return n != null ? '€' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'; }
