@@ -66,5 +66,10 @@ insert into clients (name, slug, status, cpa_target, roas_target) values
   ('Bloem & Co', 'bloem-co', 'active', 30.00, 4.0)
 on conflict (slug) do nothing;
 
+-- Indexes for performance
+create index if not exists weekly_stats_client_week on weekly_stats(client_id, week_start desc);
+create index if not exists tasks_client_id on tasks(client_id);
+create index if not exists activity_log_client_created on activity_log(client_id, created_at desc);
+
 -- Seed 8 weeks of demo data (run after clients are inserted)
 -- This is a template; adjust client_ids after inserting clients

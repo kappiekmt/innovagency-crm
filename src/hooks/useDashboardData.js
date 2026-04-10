@@ -29,9 +29,9 @@ export function useDashboardData(clientId = '') {
     const params = clientId ? `?client=${clientId}` : '';
     try {
       const [metaRes, gadsRes, ga4Res] = await Promise.all([
-        axios.get(`${BASE}/api/meta${params}`),
-        axios.get(`${BASE}/api/google-ads${params}`),
-        axios.get(`${BASE}/api/analytics${params}`),
+        axios.get(`${BASE}/api/meta${params}`,        { timeout: 10000 }),
+        axios.get(`${BASE}/api/google-ads${params}`,  { timeout: 10000 }),
+        axios.get(`${BASE}/api/analytics${params}`,   { timeout: 10000 }),
       ]);
 
       const meta = metaRes.data;
