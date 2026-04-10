@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getClient } from '../config/clients';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useMoMData } from '../hooks/useMoMData';
+import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import KPICards from '../components/KPICards';
@@ -46,9 +47,35 @@ function ClientDashboardInner({ client }) {
   const { data, isLoading, isError, isMock, lastUpdated, refetch } = useDashboardData(client.id);
   const { momData } = useMoMData(client.id);
   const [period, setPeriod] = useState('Maand');
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = session?.role === 'admin';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0c10' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a0c10' }}>
+      {/* Admin view banner */}
+      {isAdmin && (
+        <div style={{
+          background: 'rgba(59,130,246,0.08)', borderBottom: '1px solid rgba(59,130,246,0.2)',
+          padding: '9px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          zIndex: 50, flexShrink: 0,
+        }}>
+          <span style={{ fontSize: 12, color: '#93C5FD', fontWeight: 500 }}>
+            👁 Je bekijkt dit als: <strong>{client.name}</strong>
+          </span>
+          <button
+            onClick={() => navigate(`/clients/${client.id}`)}
+            style={{
+              fontSize: 12, color: '#3B82F6', background: 'rgba(59,130,246,0.1)',
+              border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6,
+              padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
+            }}
+          >
+            ← Terug naar Admin
+          </button>
+        </div>
+      )}
+    <div style={{ display: 'flex', flex: 1 }}>
       <style>{shimmerStyle}</style>
       <Sidebar client={client} />
 
@@ -129,6 +156,7 @@ function ClientDashboardInner({ client }) {
 
         <Footer />
       </div>
+    </div>
     </div>
   );
 }

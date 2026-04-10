@@ -1,9 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import ClientDashboard from './pages/ClientDashboard';
+import DashboardPage from './pages/DashboardPage';
+import ClientsListPage from './pages/ClientsListPage';
+import ClientDetailPage from './pages/ClientDetailPage';
+import TasksPage from './pages/TasksPage';
+import SettingsPage from './pages/SettingsPage';
 
 function ClientDashboardRoute() {
   const { clientId } = useParams();
@@ -14,28 +20,40 @@ function ClientDashboardRoute() {
   );
 }
 
+function AdminRoute({ children }) {
+  return <ProtectedRoute role="admin">{children}</ProtectedRoute>;
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/login/:clientId" element={<LoginPage />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Auth */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login/:clientId" element={<LoginPage />} />
 
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute role="admin">
-                <AdminPage />
-              </ProtectedRoute>
-            }
-          />
+            {/* Legacy admin page (client selection grid) */}
+            <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
-          <Route path="/client/:clientId" element={<ClientDashboardRoute />} />
+            {/* New admin centre */}
+            <Route path="/dashboard" element={<AdminRoute><DashboardPage /></AdminRoute>} />
+            <Route path="/clients"   element={<AdminRoute><ClientsListPage /></AdminRoute>} />
+            <Route path="/clients/:slug" element={<AdminRoute><ClientDetailPage /></AdminRoute>} />
+            <Route path="/tasks"     element={<AdminRoute><TasksPage /></AdminRoute>} />
+            <Route path="/settings"  element={<AdminRoute><SettingsPage /></AdminRoute>} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Client-facing dashboards */}
+            <Route path="/client/:clientId" element={<ClientDashboardRoute />} />
+
+            {/* Root: redirect admins to dashboard, clients to their dashboard */}
+            <Route path="/" element={<AdminRoute><Navigate to="/dashboard" replace /></AdminRoute>} />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }
