@@ -23,10 +23,16 @@ function getMonday(d = new Date()) {
   const date = new Date(d);
   const day = date.getDay();
   date.setDate(date.getDate() - day + (day === 0 ? -6 : 1));
-  date.setHours(0, 0, 0, 0);
+  date.setHours(12, 0, 0, 0); // noon keeps us safe from DST/timezone shifts
   return date;
 }
-function toDateStr(d) { return new Date(d).toISOString().slice(0, 10); }
+function toDateStr(d) {
+  const date = new Date(d);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
 
 const PRIORITY_COLORS = { high: '#EF4444', medium: '#EAB308', low: '#22C55E' };
@@ -137,12 +143,6 @@ export default function ClientDetailPage() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Recalc week end when start changes
-  useEffect(() => {
-    const monday = getMonday(new Date(weekStart + 'T00:00:00'));
-    setWeekStart(toDateStr(monday));
-    setWeekEnd(toDateStr(addDays(monday, 6)));
-  }, [weekStart]);
 
   // Last 8 weeks for charts
   const chartData = [...weeklyStats].reverse().slice(-8).map(r => ({
@@ -172,8 +172,9 @@ export default function ClientDetailPage() {
 
   // Data form helpers
   function handleWeekStartChange(val) {
-    const monday = getMonday(new Date(val + 'T00:00:00'));
+    const monday = getMonday(new Date(val + 'T12:00:00')); // noon avoids DST/timezone edge cases
     setWeekStart(toDateStr(monday));
+    setWeekEnd(toDateStr(addDays(monday, 6)));
   }
 
   function duplicateLastWeek() {
