@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ExternalLink, Plus, X, Copy } from 'lucide-react';
+import { ExternalLink, Plus, X, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
@@ -31,6 +31,67 @@ function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); retu
 
 const PRIORITY_COLORS = { high: '#EF4444', medium: '#EAB308', low: '#22C55E' };
 const STATUS_LABELS = { todo: 'To Do', in_progress: 'In Progress', review: 'Review', done: 'Done' };
+
+const NL_MONTHS = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const NL_DAYS   = ['zo','ma','di','wo','do','vr','za'];
+
+function fmtShort(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${NL_DAYS[d.getDay()]} ${d.getDate()} ${NL_MONTHS[d.getMonth()]}`;
+}
+
+function getISOWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+}
+
+function WeekSelector({ weekStart, weekEnd, onChange }) {
+  const todayMonday = toDateStr(getMonday());
+  const isCurrentWeek = weekStart >= todayMonday;
+
+  function shift(weeks) {
+    const d = new Date(weekStart + 'T00:00:00');
+    d.setDate(d.getDate() + weeks * 7);
+    onChange(toDateStr(d));
+  }
+
+  const weekNum = getISOWeek(weekStart);
+  const year    = new Date(weekStart + 'T00:00:00').getFullYear();
+
+  const btnStyle = (disabled) => ({
+    width: 32, height: 32, borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)',
+    background: 'transparent', cursor: disabled ? 'not-allowed' : 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: disabled ? '#3F3F46' : '#A1A1AA', flexShrink: 0, transition: 'all 0.15s',
+  });
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+      background: '#0D0F12', border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 8, padding: '6px 8px',
+    }}>
+      <button style={btnStyle(false)} onClick={() => shift(-1)}
+        onMouseEnter={e => { e.currentTarget.style.color = '#F4F4F5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = '#A1A1AA'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+      ><ChevronLeft size={14} /></button>
+
+      <div style={{ flex: 1, textAlign: 'center' }}>
+        <p style={{ fontSize: 11, color: '#52525B', marginBottom: 1 }}>Week {weekNum} · {year}</p>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#F4F4F5' }}>
+          {fmtShort(weekStart)} — {fmtShort(weekEnd)}
+        </p>
+      </div>
+
+      <button style={btnStyle(isCurrentWeek)} onClick={() => { if (!isCurrentWeek) shift(1); }}
+        onMouseEnter={e => { if (!isCurrentWeek) { e.currentTarget.style.color = '#F4F4F5'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; } }}
+        onMouseLeave={e => { e.currentTarget.style.color = isCurrentWeek ? '#3F3F46' : '#A1A1AA'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+      ><ChevronRight size={14} /></button>
+    </div>
+  );
+}
 
 export default function ClientDetailPage() {
   const { slug } = useParams();
@@ -461,10 +522,12 @@ export default function ClientDetailPage() {
 
                 {/* Week selector */}
                 <div style={{ marginBottom: 16 }}>
-                  <label style={LABEL}>Week (maandag)</label>
-                  <input type="date" style={INPUT} value={weekStart}
-                    onChange={e => handleWeekStartChange(e.target.value)} />
-                  <p style={{ fontSize: 11, color: '#52525B', marginTop: 4 }}>Week: {weekStart} t/m {weekEnd}</p>
+                  <label style={LABEL}>Week</label>
+                  <WeekSelector
+                    weekStart={weekStart}
+                    weekEnd={weekEnd}
+                    onChange={handleWeekStartChange}
+                  />
                 </div>
 
                 {/* Meta */}
