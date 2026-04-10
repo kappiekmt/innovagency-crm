@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const { signIn, session } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (!session.role) return;
-    if (session.role === 'admin') navigate('/', { replace: true });
+    if (session.role === 'admin') navigate('/dashboard', { replace: true });
     else navigate(`/client/${session.clientId}`, { replace: true });
   }, [session]);
 
@@ -32,11 +33,14 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email || !password) { setError('Vul je e-mailadres en wachtwoord in.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Voer een geldig e-mailadres in.'); return; }
+    setError('');
+    setSubmitting(true);
     try {
       await signIn(email, password);
       // Navigation handled by the useEffect above once session updates
     } catch (err) {
-      setError('Onjuiste inloggegevens.');
+      setError('Onjuiste inloggegevens. Probeer het opnieuw.');
+      setSubmitting(false);
     }
   }
 
@@ -178,6 +182,7 @@ export default function LoginPage() {
           {/* Submit button */}
           <button
             type="submit"
+            disabled={submitting}
             style={{
               marginTop: 6,
               width: '100%',
@@ -189,14 +194,24 @@ export default function LoginPage() {
               fontSize: 15,
               fontWeight: 600,
               fontFamily: 'inherit',
-              cursor: 'pointer',
-              transition: 'filter 0.15s',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              transition: 'filter 0.15s, opacity 0.15s',
               letterSpacing: '0.01em',
+              opacity: submitting ? 0.7 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
             }}
-            onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+            onMouseEnter={e => { if (!submitting) e.currentTarget.style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => e.currentTarget.style.filter = 'none'}
           >
-            Aan de slag
+            {submitting ? (
+              <>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                Bezig met inloggen…
+              </>
+            ) : 'Aan de slag'}
           </button>
         </form>
 
