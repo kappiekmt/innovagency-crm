@@ -50,23 +50,28 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!inviteForm.email) return;
     setInviting(true);
+    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTU5MTU3MiwiZXhwIjoyMDkxMTY3NTcyfQ.GDLpZmiZ8042ErELwA8f7ppKl9X8t2WzP_1U18lNdV0';
+    const clientId = inviteForm.role === 'client' ? inviteForm.client_id || null : null;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('https://fimwqcqaynjrpepkfjwh.supabase.co/functions/v1/invite-user', {
+      // Send invite email via Supabase Auth Admin REST API
+      const res = await fetch('https://fimwqcqaynjrpepkfjwh.supabase.co/auth/v1/invite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE1NzIsImV4cCI6MjA5MTE2NzU3Mn0.uDzJHxhyT2u0PMoNtnW_a_tP_BJMVxV7sj1ON-h6MJc',
+          'apikey': SERVICE_KEY,
+          'Authorization': `Bearer ${SERVICE_KEY}`,
         },
-        body: JSON.stringify({
-          email: inviteForm.email.trim(),
-          role: inviteForm.role,
-          client_id: inviteForm.role === 'client' ? inviteForm.client_id || null : null,
-        }),
+        body: JSON.stringify({ email: inviteForm.email.trim(), data: { role: inviteForm.role, client_id: clientId } }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error ?? json.message ?? `Fout ${res.status}`);
+      if (!res.ok) throw new Error(json.message ?? json.error ?? json.msg ?? `Fout ${res.status}`);
+
+      // Pre-create profile row so role is set when they confirm
+      const userId = json.id;
+      if (userId) {
+        await supabase.from('profiles').upsert({ id: userId, role: inviteForm.role, client_id: clientId, email: inviteForm.email.trim() }, { onConflict: 'id' });
+      }
+
       toast(`Uitnodiging verstuurd naar ${inviteForm.email}`, 'success');
       setInviteForm({ email: '', role: 'admin', client_id: '' });
       fetchTeam();
