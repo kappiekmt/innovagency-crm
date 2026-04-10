@@ -19,15 +19,15 @@ export default function LoginPage() {
   const [error, setError]       = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const { signIn, session } = useAuth();
+  const { signIn, session, supaSession } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect if already logged in (e.g. returning visitor with cached session)
   useEffect(() => {
     if (!session.role) return;
     if (session.role === 'admin') navigate('/dashboard', { replace: true });
-    else navigate(`/client/${session.clientId}`, { replace: true });
-  }, [session]);
+    else if (session.clientId) navigate(`/client/${session.clientId}`, { replace: true });
+  }, [session.role]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,7 +37,9 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signIn(email, password);
-      // Navigation handled by the useEffect above once session updates
+      // Navigate immediately — ProtectedRoute will wait for profile to load
+      if (!clientId) navigate('/dashboard', { replace: true });
+      else navigate(`/client/${clientId}`, { replace: true });
     } catch (err) {
       setError('Onjuiste inloggegevens. Probeer het opnieuw.');
       setSubmitting(false);
