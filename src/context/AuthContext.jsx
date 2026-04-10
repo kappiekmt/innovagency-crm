@@ -19,10 +19,20 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    // onAuthStateChange fires immediately with INITIAL_SESSION on mount —
-    // no need for a separate getSession() call, which was causing a double
-    // profile fetch and adding an extra round-trip on every page load.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // getSession() reliably resolves the initial session and unblocks loading.
+    // onAuthStateChange handles subsequent sign-in/sign-out events only,
+    // skipping INITIAL_SESSION to avoid a double profile fetch.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        const p = await fetchProfile(session.user.id);
+        setProfile(p);
+      }
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'INITIAL_SESSION') return; // already handled above
       setSession(session);
       if (session) {
         const p = await fetchProfile(session.user.id);
@@ -30,7 +40,6 @@ export function AuthProvider({ children }) {
       } else {
         setProfile(null);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
