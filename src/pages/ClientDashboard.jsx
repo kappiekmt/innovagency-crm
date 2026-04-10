@@ -3,6 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getClient } from '../config/clients';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useMoMData } from '../hooks/useMoMData';
+import { useClientStats } from '../hooks/useClientStats';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -44,12 +45,19 @@ export default function ClientDashboard() {
 }
 
 function ClientDashboardInner({ client }) {
-  const { data, isLoading, isError, isMock, lastUpdated, refetch } = useDashboardData(client.id);
-  const { momData } = useMoMData(client.id);
+  const { data: apiData, isLoading: apiLoading, isError, isMock, lastUpdated, refetch: apiRefetch } = useDashboardData(client.id);
+  const { momData: apiMomData } = useMoMData(client.id);
+  const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.id);
   const [period, setPeriod] = useState('Maand');
   const { session } = useAuth();
   const navigate = useNavigate();
   const isAdmin = session?.role === 'admin';
+
+  // Use Supabase manually-entered data when available, fall back to API data
+  const data = hasData ? supaData : apiData;
+  const momData = hasData ? supaMomData : apiMomData;
+  const isLoading = hasData ? supaLoading : apiLoading;
+  const refetch = hasData ? supaRefetch : apiRefetch;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a0c10' }}>
@@ -90,7 +98,7 @@ function ClientDashboardInner({ client }) {
           clientColor={client.color}
         />
 
-        {isMock && !isLoading && (
+        {isMock && !hasData && !isLoading && (
           <div style={{
             background: 'rgba(249,115,22,0.08)',
             borderBottom: '1px solid rgba(249,115,22,0.20)',
