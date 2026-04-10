@@ -8,6 +8,6 @@ if (!url || !key) {
 }
 
 export const supabase = createClient(
-  url  ?? 'https://placeholder.supabase.co',
-  key  ?? 'placeholder',
+  url  ?? 'https://fimwqcqaynjrpepkfjwh.supabase.co',
+  key  ?? 'sb_publishable_LBlZ8uG4aVswQLAnaRpkGA_70VsrMnP',
 );

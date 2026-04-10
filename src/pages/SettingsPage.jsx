@@ -52,14 +52,12 @@ export default function SettingsPage() {
     setInviting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const fnUrl = `${supabase.supabaseUrl}/functions/v1/invite-user`;
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_JWT ?? import.meta.env.VITE_SUPABASE_ANON_KEY ?? supabase.supabaseKey;
-      const res = await fetch(fnUrl, {
+      const res = await fetch('https://fimwqcqaynjrpepkfjwh.supabase.co/functions/v1/invite-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
-          'apikey': anonKey,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE1NzIsImV4cCI6MjA5MTE2NzU3Mn0.uDzJHxhyT2u0PMoNtnW_a_tP_BJMVxV7sj1ON-h6MJc',
         },
         body: JSON.stringify({
           email: inviteForm.email.trim(),
