@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { useAuth } from './context/AuthContext';
+import SetPasswordModal from './components/SetPasswordModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
@@ -45,9 +47,15 @@ function RootRedirect() {
 }
 
 export default function App() {
+  // Read hash synchronously before Supabase clears it
+  const [needsPassword, setNeedsPassword] = useState(
+    () => window.location.hash.includes('type=invite')
+  );
+
   return (
     <AuthProvider>
       <ToastProvider>
+        {needsPassword && <SetPasswordModal onDone={() => setNeedsPassword(false)} />}
         <BrowserRouter>
           <Routes>
             {/* Auth */}
