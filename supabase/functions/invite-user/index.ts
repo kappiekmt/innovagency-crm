@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
     // Invite the user — sends an email with a magic link
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { role, client_id: client_id ?? null },
+      redirectTo: 'https://zitcomfort-dashboard-evpblgm3k-kasper-1493s-projects.vercel.app/dashboard',
     })
     if (error) throw error
 
