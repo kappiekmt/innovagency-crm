@@ -65,8 +65,8 @@ export default function SettingsPage() {
           client_id: inviteForm.role === 'client' ? inviteForm.client_id || null : null,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Onbekende fout');
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? json.message ?? `Fout ${res.status}`);
       toast(`Uitnodiging verstuurd naar ${inviteForm.email}`, 'success');
       setInviteForm({ email: '', role: 'admin', client_id: '' });
       fetchTeam();

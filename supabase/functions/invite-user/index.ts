@@ -44,7 +44,11 @@ Deno.serve(async (req) => {
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    const message = (typeof err === 'object' && err !== null)
+      ? (err.message ?? err.error_description ?? JSON.stringify(err))
+      : String(err)
+    console.error('invite-user error:', message)
+    return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
