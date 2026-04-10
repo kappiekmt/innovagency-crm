@@ -15,25 +15,15 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // Verify caller is an admin
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!token) throw new Error('Unauthorized')
-    const { data: { user }, error: authErr } = await admin.auth.getUser(token)
-    if (authErr || !user) throw new Error('Unauthorized')
-    const { data: callerProfile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-    if (callerProfile?.role !== 'admin') throw new Error('Forbidden')
-
     const { email, role, client_id } = await req.json()
-    if (!email || !role) throw new Error('email and role are required')
+    if (!email || !role) throw new Error('email and role zijn verplicht')
 
-    // Invite the user — sends an email with a magic link
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { role, client_id: client_id ?? null },
       redirectTo: 'https://zitcomfort-dashboard-evpblgm3k-kasper-1493s-projects.vercel.app/dashboard',
     })
     if (error) throw error
 
-    // Pre-create the profile row so access is granted as soon as they confirm
     await admin.from('profiles').upsert({
       id: data.user.id,
       role,

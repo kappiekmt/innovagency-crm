@@ -53,11 +53,13 @@ export default function SettingsPage() {
     const clientId = inviteForm.role === 'client' ? inviteForm.client_id || null : null;
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Sessie verlopen — log opnieuw in');
+      const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTU5MTU3MiwiZXhwIjoyMDkxMTY3NTcyfQ.GDLpZmiZ8042ErELwA8f7ppKl9X8t2WzP_1U18lNdV0';
       const res = await fetch('https://fimwqcqaynjrpepkfjwh.supabase.co/functions/v1/invite-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${SERVICE_KEY}`,
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE1NzIsImV4cCI6MjA5MTE2NzU3Mn0.uDzJHxhyT2u0PMoNtnW_a_tP_BJMVxV7sj1ON-h6MJc',
         },
         body: JSON.stringify({ email: inviteForm.email.trim(), role: inviteForm.role, client_id: clientId }),
