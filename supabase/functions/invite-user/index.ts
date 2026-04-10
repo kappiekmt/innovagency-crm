@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { role, client_id: client_id ?? null },
-      redirectTo: 'https://zitcomfort-dashboard-evpblgm3k-kasper-1493s-projects.vercel.app/dashboard',
+      redirectTo: 'https://zitcomfort-dashboard-evpblgm3k-kasper-1493s-projects.vercel.app',
     })
     if (error) throw error
 
