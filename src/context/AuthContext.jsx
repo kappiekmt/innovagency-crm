@@ -19,24 +19,47 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    // getSession() reliably resolves the initial session and unblocks loading.
-    // onAuthStateChange handles subsequent sign-in/sign-out events only,
-    // skipping INITIAL_SESSION to avoid a double profile fetch.
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
+
       if (session) {
-        const p = await fetchProfile(session.user.id);
-        setProfile(p);
+        const cacheKey = `igcy_profile_${session.user.id}`;
+        const cached = localStorage.getItem(cacheKey);
+
+        if (cached) {
+          // Unblock the UI immediately with cached profile
+          setProfile(JSON.parse(cached));
+          setLoading(false);
+          // Silently refresh in the background
+          fetchProfile(session.user.id).then(fresh => {
+            if (fresh) {
+              setProfile(fresh);
+              localStorage.setItem(cacheKey, JSON.stringify(fresh));
+            }
+          });
+        } else {
+          // First login — fetch, cache, then unblock
+          const p = await fetchProfile(session.user.id);
+          if (p) {
+            setProfile(p);
+            localStorage.setItem(cacheKey, JSON.stringify(p));
+          }
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION') return; // already handled above
+      if (event === 'INITIAL_SESSION') return;
       setSession(session);
       if (session) {
         const p = await fetchProfile(session.user.id);
-        setProfile(p);
+        if (p) {
+          setProfile(p);
+          localStorage.setItem(`igcy_profile_${session.user.id}`, JSON.stringify(p));
+        }
       } else {
         setProfile(null);
       }
