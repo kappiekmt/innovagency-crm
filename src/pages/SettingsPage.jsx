@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, UserPlus, Trash2, Shield, User } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
@@ -14,22 +14,77 @@ const CARD  = { background: '#161A1F', borderRadius: 12, border: '1px solid rgba
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [clients, setClients]           = useState([]);
+  const [loading, setLoading]           = useState(true);
   const [savingTargets, setSavingTargets] = useState({});
-  const [targets, setTargets] = useState({});
-  const [agencyName, setAgencyName] = useState('Innovagency');
+  const [targets, setTargets]           = useState({});
+  const [agencyName, setAgencyName]     = useState('Innovagency');
 
-  useEffect(() => { fetchAll(); }, []);
+  // Team state
+  const [team, setTeam]                 = useState([]);
+  const [teamLoading, setTeamLoading]   = useState(true);
+  const [inviteForm, setInviteForm]     = useState({ email: '', role: 'admin', client_id: '' });
+  const [inviting, setInviting]         = useState(false);
+  const [removingId, setRemovingId]     = useState(null);
+
+  useEffect(() => { fetchAll(); fetchTeam(); }, []);
 
   async function fetchAll() {
-    const { data } = await supabase.from('clients').select('id, name, slug, cpa_target, roas_target').order('name');
+    const { data } = await supabase.from('clients').select('id, name, slug, cpa_target, roas_target, status').order('name');
     const c = data ?? [];
     setClients(c);
     const t = {};
     c.forEach(cl => { t[cl.id] = { cpa_target: cl.cpa_target ?? '', roas_target: cl.roas_target ?? '' }; });
     setTargets(t);
     setLoading(false);
+  }
+
+  async function fetchTeam() {
+    setTeamLoading(true);
+    const { data } = await supabase.from('profiles').select('id, role, client_id, email').order('role');
+    setTeam(data ?? []);
+    setTeamLoading(false);
+  }
+
+  async function handleInvite(e) {
+    e.preventDefault();
+    if (!inviteForm.email) return;
+    setInviting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          email: inviteForm.email.trim(),
+          role: inviteForm.role,
+          client_id: inviteForm.role === 'client' ? inviteForm.client_id || null : null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Onbekende fout');
+      toast(`Uitnodiging verstuurd naar ${inviteForm.email}`, 'success');
+      setInviteForm({ email: '', role: 'admin', client_id: '' });
+      fetchTeam();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function handleRemove(member) {
+    if (!window.confirm(`Verwijder toegang voor ${member.email ?? member.id}?`)) return;
+    setRemovingId(member.id);
+    const { error } = await supabase.from('profiles').delete().eq('id', member.id);
+    setRemovingId(null);
+    if (error) { toast(error.message, 'error'); return; }
+    setTeam(prev => prev.filter(m => m.id !== member.id));
+    toast('Teamlid verwijderd', 'success');
   }
 
   async function saveTargets(clientId, clientName) {
@@ -85,6 +140,121 @@ export default function SettingsPage() {
             >
               <Save size={13} /> Opslaan
             </button>
+          </div>
+        </div>
+
+        {/* Team */}
+        <div style={{ ...CARD, marginBottom: 24 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Team</h2>
+          <p style={{ fontSize: 12, color: '#71717A', marginBottom: 20 }}>Teamleden ontvangen een uitnodigingsmail om een account aan te maken.</p>
+
+          {/* Existing members */}
+          {teamLoading ? (
+            <p style={{ fontSize: 13, color: '#52525B', marginBottom: 20 }}>Laden…</p>
+          ) : team.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#52525B', marginBottom: 20 }}>Nog geen teamleden.</p>
+          ) : (
+            <div style={{ marginBottom: 24, display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {team.map((m, i) => {
+                const clientName = clients.find(c => c.id === m.client_id)?.name;
+                return (
+                  <div key={m.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 0',
+                    borderBottom: i < team.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: m.role === 'admin' ? 'rgba(59,130,246,0.12)' : 'rgba(34,197,94,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        {m.role === 'admin'
+                          ? <Shield size={14} color="#3B82F6" />
+                          : <User size={14} color="#22C55E" />}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#F4F4F5' }}>{m.email ?? m.id}</p>
+                        <p style={{ fontSize: 11, color: '#52525B', marginTop: 1 }}>
+                          {m.role === 'admin' ? 'Admin' : `Klant${clientName ? ` · ${clientName}` : ''}`}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemove(m)}
+                      disabled={removingId === m.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)',
+                        background: 'rgba(239,68,68,0.07)', color: '#EF4444',
+                        fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                        opacity: removingId === m.id ? 0.5 : 1,
+                      }}
+                    >
+                      <Trash2 size={11} /> Verwijderen
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Invite form */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#A1A1AA', marginBottom: 14 }}>Nieuw teamlid uitnodigen</p>
+            <form onSubmit={handleInvite}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 10, alignItems: 'flex-end' }}>
+                <div>
+                  <label style={LABEL}>E-mailadres</label>
+                  <input
+                    type="email" required
+                    placeholder="naam@bedrijf.nl"
+                    style={INPUT}
+                    value={inviteForm.email}
+                    onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label style={LABEL}>Rol</label>
+                  <select
+                    style={INPUT}
+                    value={inviteForm.role}
+                    onChange={e => setInviteForm(f => ({ ...f, role: e.target.value, client_id: '' }))}
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="client">Klant</option>
+                  </select>
+                </div>
+                {inviteForm.role === 'client' && (
+                  <div>
+                    <label style={LABEL}>Klant</label>
+                    <select
+                      style={INPUT}
+                      value={inviteForm.client_id}
+                      onChange={e => setInviteForm(f => ({ ...f, client_id: e.target.value }))}
+                    >
+                      <option value="">— Kies klant —</option>
+                      {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                )}
+                <div style={{ paddingBottom: 1 }}>
+                  <button
+                    type="submit"
+                    disabled={inviting}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '9px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                      background: '#3B82F6', color: '#fff', fontSize: 13, fontWeight: 600,
+                      fontFamily: 'inherit', whiteSpace: 'nowrap',
+                      opacity: inviting ? 0.7 : 1,
+                    }}
+                  >
+                    <UserPlus size={13} /> {inviting ? 'Bezig…' : 'Uitnodigen'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
 
