@@ -21,14 +21,14 @@ export default function ProtectedRoute({ children, role, clientId }) {
     if (!supaSession) return <Navigate to="/login" replace />;
     // Session exists but profile not yet loaded → wait briefly
     if (!session.role) return <Spinner />;
-    // Session + profile loaded but not admin → go to login
-    if (session.role !== 'admin') return <Navigate to="/login" replace />;
+    // Owner and admin both have full access
+    if (session.role !== 'admin' && session.role !== 'owner') return <Navigate to="/login" replace />;
   }
 
   if (role === 'client') {
     if (!supaSession) return <Navigate to={`/login/${clientId}`} replace />;
-    // Admins can view any client dashboard
-    if (session.role === 'admin') return children;
+    // Admins and owners can view any client dashboard
+    if (session.role === 'admin' || session.role === 'owner') return children;
     if (!session.role) return <Spinner />;
     if (session.role !== 'client' || session.clientId !== clientId) {
       return <Navigate to={`/login/${clientId}`} replace />;

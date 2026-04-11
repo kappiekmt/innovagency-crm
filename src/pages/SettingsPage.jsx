@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, UserPlus, Trash2, Shield, User } from 'lucide-react';
+import { Save, UserPlus, Trash2, Shield, User, Crown } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
@@ -165,20 +165,23 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
                         width: 32, height: 32, borderRadius: 8,
-                        background: m.role === 'admin' ? 'rgba(59,130,246,0.12)' : 'rgba(34,197,94,0.1)',
+                        background: m.role === 'owner' ? 'rgba(245,158,11,0.12)' : m.role === 'admin' ? 'rgba(59,130,246,0.12)' : 'rgba(34,197,94,0.1)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                       }}>
-                        {m.role === 'admin'
+                        {m.role === 'owner'
+                          ? <Crown size={14} color="#F59E0B" />
+                          : m.role === 'admin'
                           ? <Shield size={14} color="#3B82F6" />
                           : <User size={14} color="#22C55E" />}
                       </div>
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#F4F4F5' }}>{m.email ?? m.id}</p>
                         <p style={{ fontSize: 11, color: '#52525B', marginTop: 1 }}>
-                          {m.role === 'admin' ? 'Admin' : `Klant${clientName ? ` · ${clientName}` : ''}`}
+                          {m.role === 'owner' ? 'Owner' : m.role === 'admin' ? 'Admin' : `Klant${clientName ? ` · ${clientName}` : ''}`}
                         </p>
                       </div>
                     </div>
+                    {m.role !== 'owner' && (
                     <button
                       onClick={() => handleRemove(m)}
                       disabled={removingId === m.id}
@@ -192,6 +195,7 @@ export default function SettingsPage() {
                     >
                       <Trash2 size={11} /> Verwijderen
                     </button>
+                    )}
                   </div>
                 );
               })}

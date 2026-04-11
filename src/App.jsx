@@ -14,6 +14,7 @@ import ClientDetailPage from './pages/ClientDetailPage';
 import TasksPage from './pages/TasksPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
+import TeamPage from './pages/TeamPage';
 
 function ClientDashboardRoute() {
   const { clientId } = useParams();
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/tasks"     element={<AdminRoute><TasksPage /></AdminRoute>} />
             <Route path="/settings"  element={<AdminRoute><SettingsPage /></AdminRoute>} />
             <Route path="/profile"   element={<AdminRoute><ProfilePage /></AdminRoute>} />
+            <Route path="/team"      element={<AdminRoute><TeamPage /></AdminRoute>} />
 
             {/* Client-facing dashboards */}
             <Route path="/client/:clientId" element={<ClientDashboardRoute />} />

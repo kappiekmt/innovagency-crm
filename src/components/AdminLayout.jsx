@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Zap, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Zap, UserCircle, UsersRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/clients',   icon: Users,          label: 'Klanten'    },
   { to: '/tasks',     icon: CheckSquare,    label: 'Taken'      },
+  { to: '/team',      icon: UsersRound,     label: 'Team'       },
   { to: '/settings',  icon: Settings,       label: 'Instellingen' },
 ];
 
