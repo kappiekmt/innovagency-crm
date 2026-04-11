@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Bot
+bot/.env
+bot/__pycache__/
+bot/*.pyc
+bot/.venv/
