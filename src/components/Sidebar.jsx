@@ -20,7 +20,7 @@ const navItems = [
   { icon: Target,          label: 'Doelen & KPIs',         active: false, locked: true  },
 ];
 
-export default function Sidebar({ client }) {
+export default function Sidebar({ client, isMobile = false, isOpen = false, onClose = () => {} }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const color = client?.color ?? '#6C00EE';
@@ -28,18 +28,8 @@ export default function Sidebar({ client }) {
   const name = client?.name ?? '';
   const fullName = client?.fullName ?? '';
 
-  return (
-    <aside
-      style={{
-        width: 220,
-        minHeight: '100vh',
-        background: '#0d0f14',
-        borderRight: '1px solid rgba(255,255,255,0.05)',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-      }}
-    >
+  const inner = (
+    <>
       {/* Logo / client name */}
       <div style={{ height: 60, padding: '0 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
@@ -185,6 +175,35 @@ export default function Sidebar({ client }) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {isOpen && (
+          <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 28, backdropFilter: 'blur(3px)' }} />
+        )}
+        <aside style={{
+          position: 'fixed', top: 0, left: 0, height: '100vh', width: 260,
+          background: '#0d0f14', borderRight: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex', flexDirection: 'column', zIndex: 29, flexShrink: 0,
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
+          {inner}
+        </aside>
+      </>
+    );
+  }
+
+  return (
+    <aside style={{
+      width: 220, minHeight: '100vh', background: '#0d0f14',
+      borderRight: '1px solid rgba(255,255,255,0.05)',
+      display: 'flex', flexDirection: 'column', flexShrink: 0,
+    }}>
+      {inner}
     </aside>
   );
 }

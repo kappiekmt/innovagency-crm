@@ -1,3 +1,5 @@
+import { useIsMobile } from '../hooks/useIsMobile';
+
 function formatEuro(value) {
   return new Intl.NumberFormat('nl-NL', {
     style: 'currency', currency: 'EUR',
@@ -60,11 +62,12 @@ function PlatformCard({ name, dotColor, metrics, badge, badgeBg, badgeColor, del
 }
 
 export default function PlatformCards({ data }) {
+  const isMobile = useIsMobile();
   if (!data) return null;
   const { meta, googleAds, analytics } = data;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: isMobile ? 10 : 16 }}>
       <PlatformCard
         name="Meta Ads" dotColor="#1877f2" delay={160}
         badge="Beste CPA 🏆"

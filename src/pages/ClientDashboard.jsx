@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { getClient } from '../config/clients';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useMoMData } from '../hooks/useMoMData';
 import { useClientStats } from '../hooks/useClientStats';
 import { useAuth } from '../context/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import KPICards from '../components/KPICards';
@@ -49,9 +51,11 @@ function ClientDashboardInner({ client }) {
   const { momData: apiMomData } = useMoMData(client.id);
   const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.id);
   const [period, setPeriod] = useState('Maand');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = session?.role === 'admin';
+  const isAdmin = session?.role === 'admin' || session?.role === 'owner';
+  const isMobile = useIsMobile();
 
   // Use Supabase manually-entered data when available, fall back to API data
   const data = hasData ? supaData : apiData;
@@ -83,11 +87,11 @@ function ClientDashboardInner({ client }) {
           </button>
         </div>
       )}
-    <div style={{ display: 'flex', flex: 1 }}>
+    <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
       <style>{shimmerStyle}</style>
-      <Sidebar client={client} />
+      <Sidebar client={client} isMobile={isMobile} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         <Header
           lastUpdated={lastUpdated}
           onRefetch={refetch}
@@ -96,6 +100,8 @@ function ClientDashboardInner({ client }) {
           onPeriodChange={setPeriod}
           clientName={client.name}
           clientColor={client.color}
+          isMobile={isMobile}
+          onMenuOpen={() => setSidebarOpen(true)}
         />
 
         {isMock && !hasData && !isLoading && (
@@ -134,17 +140,17 @@ function ClientDashboardInner({ client }) {
           </div>
         )}
 
-        <main style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <main style={{ flex: 1, padding: isMobile ? '16px' : '24px', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 16 }}>
           {isLoading ? (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: isMobile ? 10 : 16 }}>
                 {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={120} delay={i * 80} />)}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: isMobile ? 10 : 16 }}>
                 {[0, 1, 2].map((i) => <Skeleton key={i} height={160} delay={i * 80 + 200} />)}
               </div>
               <Skeleton height={80} delay={400} />
-              <div style={{ display: 'flex', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                 <Skeleton height={280} delay={500} />
                 <Skeleton height={280} delay={580} />
               </div>
@@ -154,7 +160,7 @@ function ClientDashboardInner({ client }) {
               <KPICards data={data} clientColor={client.color} momData={momData} />
               <PlatformCards data={data} />
               <InsightsPanel data={data} clientColor={client.color} />
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto', gap: 16, alignItems: 'flex-start' }}>
                 <TrendChart data={data} />
                 <BudgetDonut data={data} />
               </div>

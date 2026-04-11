@@ -1,4 +1,5 @@
 import { Euro, ShoppingCart, TrendingUp, Percent } from 'lucide-react';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatEuro(value) {
   return new Intl.NumberFormat('nl-NL', {
@@ -74,6 +75,7 @@ function KPICard({ icon: Icon, label, value, trend, iconColor, accentBg, delay, 
 }
 
 export default function KPICards({ data, clientColor = '#6C00EE', momData = null }) {
+  const isMobile = useIsMobile();
   if (!data) return null;
   const { totalSpend, totalConversions, avgCpa, conversionRate } = data.summary;
 
@@ -87,7 +89,7 @@ export default function KPICards({ data, clientColor = '#6C00EE', momData = null
   const prev = momData?.previous ?? null;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: isMobile ? 10 : 16 }}>
       <KPICard
         icon={Euro} label="Totale Uitgaven"
         value={formatEuro(totalSpend)}

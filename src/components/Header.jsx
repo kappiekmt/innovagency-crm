@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw, Download } from 'lucide-react';
+import { RefreshCw, Download, Menu } from 'lucide-react';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -22,7 +22,7 @@ function formatTime(date) {
   return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange, clientName = 'Zitcomfort', clientColor = '#6C00EE' }) {
+export default function Header({ lastUpdated, onRefetch, isLoading, period, onPeriodChange, clientName = 'Zitcomfort', clientColor = '#6C00EE', isMobile = false, onMenuOpen = () => {} }) {
   const [toast, setToast] = useState(false);
 
   function handleExport() {
@@ -39,23 +39,29 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
         padding: '20px 24px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: 'space-between', gap: 12 }}>
         {/* Left */}
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.15, marginBottom: 4 }}>
-            {getGreeting()}, {clientName} 👋
-          </h1>
-          <p style={{ color: '#71717a', fontSize: 13 }}>
-            Prestatierapport — {getDutchMonth()}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          {isMobile && (
+            <button onClick={onMenuOpen} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#A1A1AA', display: 'flex', flexShrink: 0 }}>
+              <Menu size={18} />
+            </button>
+          )}
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: isMobile ? 16 : 28, fontWeight: 600, color: '#f4f4f5', lineHeight: 1.2, marginBottom: isMobile ? 0 : 4, whiteSpace: isMobile ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {isMobile ? clientName : `${getGreeting()}, ${clientName} 👋`}
+            </h1>
+            {!isMobile && <p style={{ color: '#71717a', fontSize: 13 }}>Prestatierapport — {getDutchMonth()}</p>}
+          </div>
         </div>
 
         {/* Right */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          {/* Last updated */}
-          <span style={{ fontSize: 12, color: '#71717a' }}>
-            Bijgewerkt: {formatTime(lastUpdated)}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 10, flexShrink: 0 }}>
+          {!isMobile && (
+            <span style={{ fontSize: 12, color: '#71717a' }}>
+              Bijgewerkt: {formatTime(lastUpdated)}
+            </span>
+          )}
 
           {/* Period toggle */}
           <div style={{ display: 'flex', gap: 4 }}>
@@ -64,67 +70,38 @@ export default function Header({ lastUpdated, onRefetch, isLoading, period, onPe
                 key={p}
                 onClick={() => onPeriodChange(p)}
                 style={{
-                  padding: '6px 14px',
-                  borderRadius: 8,
-                  border: '1px solid',
+                  padding: isMobile ? '5px 10px' : '6px 14px',
+                  borderRadius: 8, border: '1px solid',
                   borderColor: period === p ? clientColor : 'rgba(255,255,255,0.12)',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: period === p ? 600 : 400,
-                  fontFamily: 'inherit',
+                  cursor: 'pointer', fontSize: isMobile ? 11 : 12,
+                  fontWeight: period === p ? 600 : 400, fontFamily: 'inherit',
                   transition: 'all 0.15s ease',
                   background: period === p ? `${clientColor}1f` : 'transparent',
                   color: period === p ? clientColor : '#71717a',
                 }}
-              >
-                {p}
-              </button>
+              >{p}</button>
             ))}
           </div>
 
           {/* Refresh */}
-          <button
-            onClick={onRefetch}
-            disabled={isLoading}
-            title="Vernieuwen"
-            style={{
-              width: 32, height: 32,
-              borderRadius: 8,
-              border: 'none',
-              background: 'rgba(255,255,255,0.05)',
-              cursor: isLoading ? 'default' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#71717a',
-              transition: 'background 0.15s ease',
-            }}
+          <button onClick={onRefetch} disabled={isLoading} title="Vernieuwen"
+            style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.05)', cursor: isLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#71717a', transition: 'background 0.15s ease' }}
             onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
           >
             <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
           </button>
 
-          {/* Export */}
-          <button
-            onClick={handleExport}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '0 16px',
-              height: 36,
-              borderRadius: 8,
-              border: 'none',
-              background: clientColor,
-              color: '#fff',
-              fontSize: 14, fontWeight: 600,
-              fontFamily: 'inherit',
-              cursor: 'pointer',
-              transition: 'filter 0.15s ease',
-            }}
-            onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
-            onMouseLeave={e => e.currentTarget.style.filter = 'none'}
-          >
-            <Download size={13} />
-            Exporteren
-          </button>
+          {/* Export — hide on mobile */}
+          {!isMobile && (
+            <button onClick={handleExport}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 16px', height: 36, borderRadius: 8, border: 'none', background: clientColor, color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', transition: 'filter 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+              onMouseLeave={e => e.currentTarget.style.filter = 'none'}
+            >
+              <Download size={13} /> Exporteren
+            </button>
+          )}
         </div>
       </div>
 

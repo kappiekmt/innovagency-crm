@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { ExternalLink, Plus, X, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import AdminLayout from '../components/AdminLayout';
@@ -103,6 +104,7 @@ export default function ClientDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [client, setClient] = useState(null);
   const [weeklyStats, setWeeklyStats] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -276,9 +278,9 @@ export default function ClientDetailPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 1200 }}>
+      <div style={{ padding: isMobile ? '16px' : '36px 40px', maxWidth: 1200 }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <button onClick={() => navigate('/clients')} style={{ background: 'none', border: 'none', color: '#52525B', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>← Klanten</button>
@@ -311,7 +313,7 @@ export default function ClientDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 2, marginBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.06)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {TABS.map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '9px 16px', background: 'none', border: 'none', cursor: 'pointer',
@@ -327,7 +329,7 @@ export default function ClientDetailPage() {
         {tab === 'Overzicht' && (
           <div>
             {/* KPI cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 20 }}>
               {[
                 { label: 'Totale Spend', cur: latest.spend, old: prev.spend, fmt: fmtEur },
                 { label: 'Conversies',  cur: latest.conv,  old: prev.conv,  fmt: fmt    },
@@ -371,7 +373,7 @@ export default function ClientDetailPage() {
 
             {/* Channel breakdown */}
             {latestStat && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 10 : 16 }}>
                 {[
                   { label: 'Meta Ads', spend: latestStat.meta_spend, conv: latestStat.meta_conversions, color: '#3B82F6' },
                   { label: 'Google Ads', spend: latestStat.google_spend, conv: latestStat.google_conversions, color: '#6C00EE' },

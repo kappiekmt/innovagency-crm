@@ -27,7 +27,7 @@ export default function TasksPage() {
   const [tasks, setTasks]     = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView]       = useState('kanban'); // 'kanban' | 'list'
+  const [view, setView]       = useState(() => window.innerWidth < 1024 ? 'list' : 'kanban');
   const [showModal, setShowModal] = useState(false);
   const [filterClient, setFilterClient]   = useState('');
   const [filterPriority, setFilterPriority] = useState('');
