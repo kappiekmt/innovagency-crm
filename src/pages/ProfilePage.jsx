@@ -66,11 +66,11 @@ export default function ProfilePage() {
               <span style={{
                 display: 'inline-block', marginTop: 4,
                 fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
-                background: role === 'admin' ? 'rgba(59,130,246,0.1)' : 'rgba(34,197,94,0.1)',
-                color: role === 'admin' ? '#3B82F6' : '#22C55E',
-                border: `1px solid ${role === 'admin' ? 'rgba(59,130,246,0.25)' : 'rgba(34,197,94,0.25)'}`,
+                background: role === 'owner' ? 'rgba(245,158,11,0.1)' : role === 'admin' ? 'rgba(59,130,246,0.1)' : 'rgba(34,197,94,0.1)',
+                color: role === 'owner' ? '#F59E0B' : role === 'admin' ? '#3B82F6' : '#22C55E',
+                border: `1px solid ${role === 'owner' ? 'rgba(245,158,11,0.25)' : role === 'admin' ? 'rgba(59,130,246,0.25)' : 'rgba(34,197,94,0.25)'}`,
               }}>
-                {role === 'admin' ? 'Admin' : 'Klant'}
+                {role === 'owner' ? 'Owner' : role === 'admin' ? 'Admin' : 'Klant'}
               </span>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
                 <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#52525B', display: 'flex' }}>
                   <User size={14} />
                 </span>
-                <input style={{ ...INPUT, color: '#52525B' }} value={role === 'admin' ? 'Admin' : 'Klant'} disabled />
+                <input style={{ ...INPUT, color: '#52525B' }} value={role === 'owner' ? 'Owner' : role === 'admin' ? 'Admin' : 'Klant'} disabled />
               </div>
             </div>
           </div>
