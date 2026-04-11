@@ -4,6 +4,7 @@ import { Plus, ExternalLink, X } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function getWeekStart() {
   const d = new Date();
@@ -34,6 +35,7 @@ function toSlug(name) {
 export default function ClientsListPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [clients, setClients] = useState([]);
   const [weekStats, setWeekStats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,14 +94,14 @@ export default function ClientsListPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 1200 }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 1200 }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Klanten</h1>
+            <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Klanten</h1>
             <p style={{ fontSize: 13, color: '#71717A' }}>{clients.length} klant{clients.length !== 1 ? 'en' : ''} in totaal</p>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             {/* Status filter */}
             <div style={{ display: 'flex', gap: 4, background: '#161A1F', borderRadius: 8, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
               {['all', 'active', 'paused'].map(f => (
@@ -129,8 +131,8 @@ export default function ClientsListPage() {
         </div>
 
         {/* Table */}
-        <div style={{ ...CARD, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ ...CARD, overflow: 'hidden', overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 {['Klant', 'Status', 'Spend (week)', 'Conversies (week)', 'CPA', 'Health', 'Acties'].map(h => (

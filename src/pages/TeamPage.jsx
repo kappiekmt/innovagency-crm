@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Crown, Shield, User, Clock, CheckSquare, AlertCircle, Loader, Mail, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTU5MTU3MiwiZXhwIjoyMDkxMTY3NTcyfQ.GDLpZmiZ8042ErELwA8f7ppKl9X8t2WzP_1U18lNdV0';
 
@@ -34,7 +35,7 @@ function initials(email) {
   return (email ?? '?').split('@')[0].slice(0, 2).toUpperCase();
 }
 
-function MemberCard({ member, tasks, clients }) {
+function MemberCard({ member, tasks, clients, isMobile }) {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const rc = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.admin;
@@ -101,7 +102,7 @@ function MemberCard({ member, tasks, clients }) {
         </div>
 
         {/* Task stats */}
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ display: isMobile ? 'none' : 'flex', gap: 20, alignItems: 'center', flexShrink: 0 }}>
           {[
             { status: 'in_progress', count: statusCounts.in_progress },
             { status: 'review',      count: statusCounts.review },
@@ -213,6 +214,7 @@ function MemberCard({ member, tasks, clients }) {
 }
 
 export default function TeamPage() {
+  const isMobile = useIsMobile();
   const [members, setMembers]   = useState([]);
   const [tasks, setTasks]       = useState([]);
   const [clients, setClients]   = useState([]);
@@ -258,15 +260,15 @@ export default function TeamPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 1100 }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 1100 }}>
         {/* Header */}
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Team</h1>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Team</h1>
           <p style={{ fontSize: 13, color: '#71717A' }}>Overzicht van alle teamleden, taken en klantverbindingen</p>
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 24 }}>
           {[
             { label: 'Teamleden',     value: members.length, color: '#3B82F6', sub: `${members.filter(m => m.role === 'owner').length} owner, ${members.filter(m => m.role === 'admin').length} admins` },
             { label: 'Open taken',    value: openTasks,      color: '#F59E0B', sub: `${highPrio} hoge prioriteit` },
@@ -293,7 +295,7 @@ export default function TeamPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {members.map(m => (
-              <MemberCard key={m.id} member={m} tasks={tasks} clients={clients} />
+              <MemberCard key={m.id} member={m} tasks={tasks} clients={clients} isMobile={isMobile} />
             ))}
             {members.length === 0 && (
               <div style={{ textAlign: 'center', padding: 60, color: '#52525B', fontSize: 13 }}>

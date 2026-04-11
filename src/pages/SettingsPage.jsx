@@ -3,6 +3,7 @@ import { Save, UserPlus, Trash2, Shield, User, Crown } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const INPUT = {
   width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 13,
@@ -14,6 +15,7 @@ const CARD  = { background: '#161A1F', borderRadius: 12, border: '1px solid rgba
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [clients, setClients]           = useState([]);
   const [loading, setLoading]           = useState(true);
   const [savingTargets, setSavingTargets] = useState({});
@@ -108,9 +110,9 @@ export default function SettingsPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 900 }}>
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Instellingen</h1>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 900 }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Instellingen</h1>
           <p style={{ fontSize: 13, color: '#71717A' }}>Beheer agency-instellingen en klantdoelen</p>
         </div>
 
@@ -206,7 +208,7 @@ export default function SettingsPage() {
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
             <p style={{ fontSize: 12, fontWeight: 600, color: '#A1A1AA', marginBottom: 14 }}>Nieuw teamlid uitnodigen</p>
             <form onSubmit={handleInvite}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 10, alignItems: 'flex-end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 140px auto', gap: 10, alignItems: 'flex-end' }}>
                 <div>
                   <label style={LABEL}>E-mailadres</label>
                   <input
@@ -274,8 +276,8 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {clients.map((c, i) => (
                 <div key={c.id} style={{
-                  display: 'grid', gridTemplateColumns: '1fr 140px 140px 120px 100px',
-                  gap: 12, alignItems: 'center', padding: '16px 0',
+                  display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 140px 140px 120px 100px',
+                  gap: isMobile ? 10 : 12, alignItems: 'center', padding: '16px 0',
                   borderBottom: i < clients.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                 }}>
                   <div>

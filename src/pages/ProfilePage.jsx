@@ -4,6 +4,7 @@ import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const CARD  = { background: '#161A1F', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', padding: '24px' };
 const INPUT = {
@@ -14,6 +15,7 @@ const INPUT = {
 const LABEL = { fontSize: 11, fontWeight: 600, color: '#71717A', marginBottom: 6, display: 'block' };
 
 export default function ProfilePage() {
+  const isMobile = useIsMobile();
   const { profile, supaSession } = useAuth();
   const { toast } = useToast();
   const email = supaSession?.user?.email ?? '—';
@@ -43,7 +45,7 @@ export default function ProfilePage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 640 }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 640 }}>
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Mijn profiel</h1>
           <p style={{ fontSize: 13, color: '#71717A' }}>Bekijk je account en wijzig je wachtwoord</p>

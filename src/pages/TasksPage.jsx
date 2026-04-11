@@ -3,6 +3,7 @@ import { Plus, X, List, LayoutGrid } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const COLUMNS = [
   { key: 'todo',        label: 'To Do',       color: '#52525B' },
@@ -22,6 +23,7 @@ const LABEL = { fontSize: 11, fontWeight: 600, color: '#71717A', marginBottom: 6
 
 export default function TasksPage() {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [tasks, setTasks]     = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,14 +89,14 @@ export default function TasksPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px' }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px' }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Taken</h1>
+            <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Taken</h1>
             <p style={{ fontSize: 13, color: '#71717A' }}>{tasks.length} taken in totaal</p>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             {/* Filters */}
             <select style={{ ...INPUT, width: 'auto', fontSize: 12, padding: '7px 10px' }} value={filterClient} onChange={e => setFilterClient(e.target.value)}>
               <option value="">Alle klanten</option>
@@ -130,7 +132,7 @@ export default function TasksPage() {
 
         {/* Kanban view */}
         {view === 'kanban' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(4, 280px)' : 'repeat(4, 1fr)', gap: 16, alignItems: 'start', overflowX: isMobile ? 'auto' : 'visible', paddingBottom: isMobile ? 8 : 0 }}>
             {COLUMNS.map(col => {
               const colTasks = filtered.filter(t => t.status === col.key);
               return (
@@ -159,8 +161,8 @@ export default function TasksPage() {
 
         {/* List view */}
         {view === 'list' && (
-          <div style={{ background: '#161A1F', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ background: '#161A1F', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   {['Taak', 'Klant', 'Status', 'Prioriteit', 'Verantwoordelijke', 'Deadline', ''].map(h => (

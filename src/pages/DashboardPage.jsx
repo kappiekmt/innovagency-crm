@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, TrendingDown, Activity, ArrowRight } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function getWeekStart(offset = 0) {
   const d = new Date();
@@ -32,6 +33,7 @@ const CARD_STYLE = {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [clients, setClients] = useState([]);
   const [thisWeek, setThisWeek] = useState([]);
   const [lastWeek, setLastWeek] = useState([]);
@@ -87,15 +89,15 @@ export default function DashboardPage() {
 
   return (
     <AdminLayout>
-      <div style={{ padding: '36px 40px', maxWidth: 1280 }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 1280 }}>
         {/* Header */}
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Agency Dashboard</h1>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#F4F4F5', marginBottom: 4 }}>Agency Dashboard</h1>
           <p style={{ fontSize: 13, color: '#71717A' }}>Weekoverzicht van alle actieve klanten</p>
         </div>
 
         {/* KPI row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 28 }}>
           {[
             { label: 'Totale Ad Spend',    value: loading ? '…' : fmtEur(totalSpend) },
             { label: 'Totale Conversies',  value: loading ? '…' : fmt(totalConv)     },
@@ -148,12 +150,12 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px', gap: 24 }}>
           {/* Performance table */}
           <div>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>Prestaties per klant</p>
-            <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     {['Klant', 'Spend', 'Conversies', 'CPA', 'Trend', 'Status'].map(h => (
