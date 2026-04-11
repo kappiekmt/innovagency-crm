@@ -119,7 +119,7 @@ export default function SettingsPage() {
         {/* Agency info */}
         <div style={{ ...CARD, marginBottom: 24 }}>
           <h2 style={{ fontSize: 14, fontWeight: 700, color: '#F4F4F5', marginBottom: 20 }}>Agency informatie</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             <div>
               <label style={LABEL}>Agency naam</label>
               <input style={INPUT} value={agencyName} onChange={e => setAgencyName(e.target.value)} />
@@ -276,7 +276,7 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {clients.map((c, i) => (
                 <div key={c.id} style={{
-                  display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 140px 140px 120px 100px',
+                  display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 140px 140px 120px 100px',
                   gap: isMobile ? 10 : 12, alignItems: 'center', padding: '16px 0',
                   borderBottom: i < clients.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                 }}>
