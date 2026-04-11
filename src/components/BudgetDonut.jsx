@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from 'recharts';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatEuro(value) {
   return new Intl.NumberFormat('nl-NL', {
@@ -52,6 +53,7 @@ function renderCenterLabel({ viewBox }, totalSpend) {
 }
 
 export default function BudgetDonut({ data }) {
+  const isMobile = useIsMobile();
   if (!data) return null;
   const { meta, googleAds } = data;
   const total = meta.spend + googleAds.spend;
@@ -64,7 +66,7 @@ export default function BudgetDonut({ data }) {
   return (
     <div
       className="card animate-in animate-delay-4"
-      style={{ padding: '20px', width: 280, flexShrink: 0 }}
+      style={{ padding: '20px', width: isMobile ? '100%' : 280, flexShrink: 0 }}
     >
       <h3 style={{ fontSize: 13, fontWeight: 500, color: '#71717a', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
         Budgetverdeling

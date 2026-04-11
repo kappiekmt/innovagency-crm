@@ -1,4 +1,5 @@
 import { TrendingUp, AlertTriangle, Info } from 'lucide-react';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 function formatEuro(value) {
   return new Intl.NumberFormat('nl-NL', {
@@ -101,6 +102,7 @@ function generateInsights(data, clientColor = '#6C00EE') {
 }
 
 export default function InsightsPanel({ data, clientColor = '#6C00EE' }) {
+  const isMobile = useIsMobile();
   if (!data) return null;
   const insights = generateInsights(data, clientColor);
 
@@ -132,7 +134,7 @@ export default function InsightsPanel({ data, clientColor = '#6C00EE' }) {
         <span>📊</span> Belangrijkste Inzichten
       </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 10 : 12 }}>
         {insights.map((insight, i) => {
           const Icon = insight.icon;
           return (
