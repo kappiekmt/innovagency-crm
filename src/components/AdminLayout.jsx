@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Zap, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
@@ -10,8 +10,10 @@ const NAV = [
 ];
 
 export default function AdminLayout({ children }) {
-  const { signOut } = useAuth();
+  const { signOut, supaSession } = useAuth();
   const navigate = useNavigate();
+  const email = supaSession?.user?.email ?? '';
+  const initials = email ? email.slice(0, 2).toUpperCase() : '?';
 
   function handleLogout() {
     signOut();
@@ -91,8 +93,36 @@ export default function AdminLayout({ children }) {
           ))}
         </nav>
 
-        {/* Logout */}
+        {/* User profile + logout */}
         <div style={{ padding: '10px 8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <NavLink
+            to="/profile"
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 10px', borderRadius: 8, marginBottom: 2,
+              textDecoration: 'none',
+              background: isActive ? 'rgba(59,130,246,0.1)' : 'transparent',
+              borderLeft: isActive ? '2px solid #3B82F6' : '2px solid transparent',
+              transition: 'all 0.15s',
+            })}
+            onMouseEnter={e => { if (!e.currentTarget.style.background.includes('59,130,246')) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+            onMouseLeave={e => { if (!e.currentTarget.style.background.includes('59,130,246')) e.currentTarget.style.background = 'transparent'; }}
+          >
+            <div style={{
+              width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+              background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, fontWeight: 700, color: '#3B82F6',
+            }}>
+              {initials}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#F4F4F5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {email}
+              </p>
+              <p style={{ fontSize: 10, color: '#52525B', marginTop: 1 }}>Mijn profiel</p>
+            </div>
+          </NavLink>
           <button
             onClick={handleLogout}
             style={{
@@ -102,7 +132,7 @@ export default function AdminLayout({ children }) {
               fontSize: 13, color: '#52525B', fontFamily: 'inherit',
               transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#F4F4F5'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.06)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#52525B'; e.currentTarget.style.background = 'none'; }}
           >
             <LogOut size={14} />
