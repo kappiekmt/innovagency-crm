@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -49,18 +50,28 @@ function RootRedirect() {
 }
 
 export default function App() {
-  // Read hash synchronously before Supabase clears it
   const [needsPassword, setNeedsPassword] = useState(
-    () => window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')
+    () => window.location.hash.includes('type=invite')
   );
+  const [isReset, setIsReset] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsReset(true);
+        setNeedsPassword(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <AuthProvider>
       <ToastProvider>
         {needsPassword && (
           <SetPasswordModal
-            onDone={() => setNeedsPassword(false)}
-            isReset={window.location.hash.includes('type=recovery')}
+            onDone={() => { setNeedsPassword(false); setIsReset(false); }}
+            isReset={isReset}
           />
         )}}
         <BrowserRouter>
