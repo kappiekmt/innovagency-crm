@@ -74,7 +74,7 @@ export default function App() {
             onDone={() => { setNeedsPassword(false); setIsReset(false); }}
             isReset={isReset}
           />
-        )}}
+        )}
         <BrowserRouter>
           <Routes>
             {/* Auth */}
