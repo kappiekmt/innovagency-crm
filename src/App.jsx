@@ -7,6 +7,7 @@ import { useAuth } from './context/AuthContext';
 import SetPasswordModal from './components/SetPasswordModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminPage from './pages/AdminPage';
 import ClientDashboard from './pages/ClientDashboard';
 import DashboardPage from './pages/DashboardPage';
@@ -79,6 +80,7 @@ export default function App() {
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login/:clientId" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Legacy admin page (client selection grid) */}
             <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />

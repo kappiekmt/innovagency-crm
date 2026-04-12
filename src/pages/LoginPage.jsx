@@ -37,7 +37,7 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://app.innovagency.nl',
+      redirectTo: 'https://app.innovagency.nl/reset-password',
     });
     setSubmitting(false);
     setView('sent');

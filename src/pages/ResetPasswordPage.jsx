@@ -1,0 +1,155 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
+
+export default function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [pw, setPw]         = useState({ next: '', confirm: '' });
+  const [show, setShow]     = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [done, setDone]     = useState(false);
+  const [error, setError]   = useState('');
+  const [ready, setReady]   = useState(false);
+
+  // Wait for Supabase to process the recovery token from the URL hash
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setReady(true);
+      } else {
+        // No session — invalid/expired link, send to login
+        navigate('/login', { replace: true });
+      }
+    });
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (pw.next.length < 8)     { setError('Wachtwoord moet minimaal 8 tekens zijn.'); return; }
+    if (pw.next !== pw.confirm) { setError('Wachtwoorden komen niet overeen.'); return; }
+    setError('');
+    setSaving(true);
+    const { error: err } = await supabase.auth.updateUser({ password: pw.next });
+    setSaving(false);
+    if (err) { setError(err.message); return; }
+    setDone(true);
+    toast('Wachtwoord ingesteld!', 'success');
+    setTimeout(() => navigate('/login', { replace: true }), 2000);
+  }
+
+  const INPUT = {
+    width: '100%', padding: '11px 40px 11px 40px',
+    background: '#111318', border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 12, color: '#f4f4f5', fontSize: 14,
+    fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0a0c10',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', padding: 24,
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 420,
+        background: '#0d0f14', border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 24, padding: '40px 36px 36px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+      }}>
+        {done ? (
+          <>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+            }}>
+              <CheckCircle size={22} color="#22c55e" strokeWidth={1.8} />
+            </div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>
+              Wachtwoord ingesteld
+            </h1>
+            <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6 }}>
+              Je wordt doorgestuurd naar de inlogpagina…
+            </p>
+          </>
+        ) : !ready ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#6C00EE', animation: 'spin 0.7s linear infinite' }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        ) : (
+          <>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: 'rgba(108,0,238,0.12)', border: '1px solid rgba(108,0,238,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+            }}>
+              <Lock size={22} color="#6C00EE" strokeWidth={1.8} />
+            </div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>
+              Nieuw wachtwoord instellen
+            </h1>
+            <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6, marginBottom: 28 }}>
+              Kies een sterk wachtwoord van minimaal 8 tekens.
+            </p>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { key: 'next',    placeholder: 'Nieuw wachtwoord'    },
+                { key: 'confirm', placeholder: 'Bevestig wachtwoord' },
+              ].map(({ key, placeholder }) => (
+                <div key={key} style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#52525b', display: 'flex' }}>
+                    <Lock size={15} strokeWidth={1.8} />
+                  </span>
+                  <input
+                    type={show ? 'text' : 'password'}
+                    placeholder={placeholder}
+                    value={pw[key]}
+                    onChange={e => setPw(p => ({ ...p, [key]: e.target.value }))}
+                    style={INPUT}
+                    required
+                    autoFocus={key === 'next'}
+                  />
+                  {key === 'next' && (
+                    <button type="button" onClick={() => setShow(s => !s)} style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', display: 'flex',
+                    }}>
+                      {show ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  )}
+                </div>
+              ))}
+              {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
+              <button
+                type="submit"
+                disabled={saving}
+                style={{
+                  marginTop: 6, width: '100%', padding: '13px',
+                  background: '#6C00EE', border: 'none', borderRadius: 12,
+                  color: '#fff', fontSize: 15, fontWeight: 600,
+                  fontFamily: 'inherit', cursor: saving ? 'not-allowed' : 'pointer',
+                  opacity: saving ? 0.7 : 1, transition: 'filter 0.15s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+                onMouseEnter={e => { if (!saving) e.currentTarget.style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
+              >
+                {saving ? (
+                  <>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                    Bezig…
+                  </>
+                ) : 'Wachtwoord instellen'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+      <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 24 }}>Innovagency — Dashboard Platform</p>
+    </div>
+  );
+}
