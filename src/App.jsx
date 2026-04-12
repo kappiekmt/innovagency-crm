@@ -45,8 +45,10 @@ function RootRedirect() {
   if (!supaSession) return <Navigate to="/login" replace />;
   if (!session.role) return null; // still loading profile — auth state will update
 
-  if (session.role === 'admin') return <Navigate to="/dashboard" replace />;
-  if (session.role === 'client' && session.clientId) return <Navigate to={`/client/${session.clientId}`} replace />;
+  const INTERNAL = ['owner', 'account_manager', 'admin', 'team_member', 'viewer'];
+  if (INTERNAL.includes(session.role)) return <Navigate to="/dashboard" replace />;
+  if (['client', 'client_admin', 'client_member'].includes(session.role) && session.clientId)
+    return <Navigate to={`/client/${session.clientId}`} replace />;
   return <Navigate to="/login" replace />;
 }
 

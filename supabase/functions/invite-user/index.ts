@@ -6,15 +6,19 @@ const cors = {
 }
 
 const ROLE_LABEL: Record<string, string> = {
-  owner: 'Owner',
-  admin: 'Admin',
-  client: 'Klant',
+  owner:           'Owner',
+  account_manager: 'Account Manager',
+  team_member:     'Team Member',
+  viewer:          'Viewer',
+  client:          'Klant',
 }
 
 const ROLE_DESC: Record<string, string> = {
-  owner: 'Je hebt volledige toegang tot het Innovagency dashboard.',
-  admin: 'Je hebt toegang tot het Innovagency admin dashboard.',
-  client: 'Je kunt je campagne-statistieken bekijken in je persoonlijk dashboard.',
+  owner:           'Je hebt volledige toegang tot het Innovagency dashboard.',
+  account_manager: 'Je beheert toegewezen klantaccounts in het Innovagency dashboard.',
+  team_member:     'Je kunt taken bekijken en beheren die aan jou zijn toegewezen.',
+  viewer:          'Je hebt leestoegang tot toegewezen klantaccounts.',
+  client:          'Je kunt je campagne-statistieken bekijken in je persoonlijk dashboard.',
 }
 
 function buildEmail(email: string, role: string, inviteUrl: string): string {

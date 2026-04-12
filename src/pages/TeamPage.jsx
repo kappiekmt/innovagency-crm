@@ -8,9 +8,12 @@ import { useIsMobile } from '../hooks/useIsMobile';
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTU5MTU3MiwiZXhwIjoyMDkxMTY3NTcyfQ.GDLpZmiZ8042ErELwA8f7ppKl9X8t2WzP_1U18lNdV0';
 
 const ROLE_CONFIG = {
-  owner: { label: 'Owner', icon: Crown,  color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)' },
-  admin: { label: 'Admin', icon: Shield, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
-  client:{ label: 'Klant', icon: User,   color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  },
+  owner:           { label: 'Owner',           icon: Crown,  color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)' },
+  account_manager: { label: 'Account Manager', icon: Shield, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
+  team_member:     { label: 'Team Member',     icon: User,   color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)' },
+  viewer:          { label: 'Viewer',          icon: User,   color: '#52525B', bg: 'rgba(82,82,91,0.1)',   border: 'rgba(82,82,91,0.25)'   },
+  // legacy
+  admin:           { label: 'Account Manager', icon: Shield, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
 };
 
 const STATUS_COLOR = { todo: '#52525B', in_progress: '#3B82F6', review: '#F59E0B', done: '#22C55E' };
@@ -225,7 +228,7 @@ export default function TeamPage() {
   async function fetchAll() {
     setLoading(true);
     const [profilesRes, tasksRes, clientsRes, authRes] = await Promise.all([
-      supabase.from('profiles').select('*').in('role', ['owner', 'admin']),
+      supabase.from('profiles').select('*').in('role', ['owner', 'account_manager', 'admin', 'team_member', 'viewer']),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('name'),
       fetch('https://fimwqcqaynjrpepkfjwh.supabase.co/auth/v1/admin/users?per_page=100', {
@@ -244,7 +247,7 @@ export default function TeamPage() {
       const au = authUsers.find(u => u.id === p.id);
       return { ...p, last_sign_in_at: au?.last_sign_in_at ?? null, confirmed_at: au?.confirmed_at ?? null };
     }).sort((a, b) => {
-      const order = { owner: 0, admin: 1 };
+      const order = { owner: 0, account_manager: 1, admin: 1, team_member: 2, viewer: 3 };
       return (order[a.role] ?? 2) - (order[b.role] ?? 2);
     });
 
@@ -270,7 +273,7 @@ export default function TeamPage() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 24 }}>
           {[
-            { label: 'Teamleden',     value: members.length, color: '#3B82F6', sub: `${members.filter(m => m.role === 'owner').length} owner, ${members.filter(m => m.role === 'admin').length} admins` },
+            { label: 'Teamleden', value: members.length, color: '#3B82F6', sub: `${members.filter(m => m.role === 'owner').length} owner · ${members.filter(m => ['account_manager','admin'].includes(m.role)).length} managers · ${members.filter(m => m.role === 'team_member').length} members` },
             { label: 'Open taken',    value: openTasks,      color: '#F59E0B', sub: `${highPrio} hoge prioriteit` },
             { label: 'Afgerond',      value: doneTasks,      color: '#22C55E', sub: 'van alle taken' },
             { label: 'Klanten',       value: clients.length, color: '#8B5CF6', sub: `${clients.filter(c => c.status === 'active').length} actief` },

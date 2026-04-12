@@ -226,7 +226,9 @@ export default function SettingsPage() {
                     value={inviteForm.role}
                     onChange={e => setInviteForm(f => ({ ...f, role: e.target.value, client_id: '' }))}
                   >
-                    <option value="admin">Admin</option>
+                    <option value="account_manager">Account Manager</option>
+                    <option value="team_member">Team Member</option>
+                    <option value="viewer">Viewer</option>
                     <option value="client">Klant</option>
                   </select>
                 </div>

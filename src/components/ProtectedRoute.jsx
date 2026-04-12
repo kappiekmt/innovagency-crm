@@ -16,21 +16,21 @@ export default function ProtectedRoute({ children, role, clientId }) {
   // Still determining if there's a session at all
   if (loading) return <Spinner />;
 
+  // Internal roles — all have access to admin centre (scoping handled per-page)
+  const INTERNAL_ROLES = ['owner', 'account_manager', 'team_member', 'viewer'];
+
   if (role === 'admin') {
-    // No Supabase session → go to login
     if (!supaSession) return <Navigate to="/login" replace />;
-    // Session exists but profile not yet loaded → wait briefly
     if (!session.role) return <Spinner />;
-    // Owner and admin both have full access
-    if (session.role !== 'admin' && session.role !== 'owner') return <Navigate to="/login" replace />;
+    if (!INTERNAL_ROLES.includes(session.role)) return <Navigate to="/login" replace />;
   }
 
   if (role === 'client') {
     if (!supaSession) return <Navigate to={`/login/${clientId}`} replace />;
-    // Admins and owners can view any client dashboard
-    if (session.role === 'admin' || session.role === 'owner') return children;
+    // Internal users can view any client dashboard
+    if (INTERNAL_ROLES.includes(session.role)) return children;
     if (!session.role) return <Spinner />;
-    if (session.role !== 'client' || session.clientId !== clientId) {
+    if (!['client', 'client_admin', 'client_member'].includes(session.role) || session.clientId !== clientId) {
       return <Navigate to={`/login/${clientId}`} replace />;
     }
   }
