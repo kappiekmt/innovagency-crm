@@ -3,7 +3,7 @@ import { Lock, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 
-export default function SetPasswordModal({ onDone }) {
+export default function SetPasswordModal({ onDone, isReset = false }) {
   const { toast } = useToast();
   const [password, setPassword]     = useState('');
   const [confirm, setConfirm]       = useState('');
@@ -53,10 +53,12 @@ export default function SetPasswordModal({ onDone }) {
         </div>
 
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>
-          Stel je wachtwoord in
+          {isReset ? 'Nieuw wachtwoord instellen' : 'Stel je wachtwoord in'}
         </h1>
         <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6, marginBottom: 28 }}>
-          Kies een wachtwoord om in te kunnen blijven loggen op het dashboard.
+          {isReset
+            ? 'Kies een nieuw wachtwoord van minimaal 8 tekens.'
+            : 'Kies een wachtwoord om in te kunnen blijven loggen op het dashboard.'}
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

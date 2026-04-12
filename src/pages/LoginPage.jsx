@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { getClient } from '../config/clients';
 
 export default function LoginPage() {
@@ -14,12 +15,13 @@ export default function LoginPage() {
   const g = parseInt(accent.slice(3, 5), 16);
   const b = parseInt(accent.slice(5, 7), 16);
 
+  const [view, setView]         = useState('login'); // 'login' | 'forgot' | 'sent'
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const { signIn, session, supaSession } = useAuth();
+  const { signIn, session } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in (e.g. returning visitor with cached session)
@@ -28,6 +30,18 @@ export default function LoginPage() {
     if (session.role === 'admin') navigate('/dashboard', { replace: true });
     else if (session.clientId) navigate(`/client/${session.clientId}`, { replace: true });
   }, [session.role]);
+
+  async function handleForgot(e) {
+    e.preventDefault();
+    if (!email) { setError('Voer je e-mailadres in.'); return; }
+    setError('');
+    setSubmitting(true);
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://app.innovagency.nl',
+    });
+    setSubmitting(false);
+    setView('sent');
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -96,171 +110,200 @@ export default function LoginPage() {
         alignItems: 'center',
       }}>
 
-        {/* Icon */}
-        <div style={{
-          width: 52, height: 52,
-          borderRadius: 14,
-          background: '#1a1d24',
-          border: '1px solid rgba(255,255,255,0.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginBottom: 24,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
-        }}>
-          <LogIn size={22} color="#f4f4f5" strokeWidth={1.8} />
-        </div>
-
-        {/* Title */}
-        <h1 style={{
-          fontSize: 22, fontWeight: 700,
-          color: '#f4f4f5', textAlign: 'center',
-          marginBottom: 8, lineHeight: 1.2,
-        }}>
-          Inloggen met e-mail
-        </h1>
-
-        {/* Subtitle */}
-        <p style={{
-          fontSize: 13, color: '#71717a',
-          textAlign: 'center', lineHeight: 1.6,
-          marginBottom: 28, maxWidth: 280,
-        }}>
-          {isAdmin
-            ? 'Toegang tot het InnovaIgency beheerderspaneel'
-            : `Toegang tot het ${client.name} dashboard`}
-        </p>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-          {/* Email input */}
-          <div style={{ position: 'relative' }}>
-            <span style={iconStyle}><Mail size={15} strokeWidth={1.8} /></span>
-            <input
-              type="email"
-              placeholder="E-mailadres"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
-              onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Password input */}
-          <div style={{ position: 'relative' }}>
-            <span style={iconStyle}><Lock size={15} strokeWidth={1.8} /></span>
-            <input
-              type="password"
-              placeholder="Wachtwoord"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
-              onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Error + Forgot password */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 18 }}>
-            {error
-              ? <span style={{ fontSize: 12, color: '#ef4444' }}>{error}</span>
-              : <span />}
+        {/* ── SENT VIEW ── */}
+        {view === 'sent' && (
+          <>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+            }}>
+              <CheckCircle size={22} color="#22c55e" strokeWidth={1.8} />
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f4f4f5', textAlign: 'center', marginBottom: 8 }}>
+              Check je e-mail
+            </h1>
+            <p style={{ fontSize: 13, color: '#71717a', textAlign: 'center', lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
+              We hebben een resetlink gestuurd naar <strong style={{ color: '#a1a1aa' }}>{email}</strong>. Klik op de link in de e-mail om je wachtwoord in te stellen.
+            </p>
             <button
               type="button"
+              onClick={() => { setView('login'); setError(''); }}
               style={{
-                fontSize: 12, fontWeight: 500,
-                color: '#52525b', background: 'none',
-                border: 'none', cursor: 'pointer',
-                fontFamily: 'inherit', padding: 0,
-                transition: 'color 0.15s', marginLeft: 'auto',
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, color: '#71717a', background: 'none',
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
+                transition: 'color 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.color = '#a3a3a3'}
-              onMouseLeave={e => e.currentTarget.style.color = '#52525b'}
+              onMouseEnter={e => e.currentTarget.style.color = '#d4d4d8'}
+              onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
             >
-              Wachtwoord vergeten?
+              <ArrowLeft size={14} /> Terug naar inloggen
             </button>
-          </div>
+          </>
+        )}
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              marginTop: 6,
-              width: '100%',
-              padding: '13px',
-              background: accent,
-              border: 'none',
-              borderRadius: 12,
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'filter 0.15s, opacity 0.15s',
-              letterSpacing: '0.01em',
-              opacity: submitting ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-            onMouseEnter={e => { if (!submitting) e.currentTarget.style.filter = 'brightness(1.1)'; }}
-            onMouseLeave={e => e.currentTarget.style.filter = 'none'}
-          >
-            {submitting ? (
-              <>
-                <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
-                Bezig met inloggen…
-              </>
-            ) : 'Aan de slag'}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div style={{
-          display: 'flex', alignItems: 'center',
-          width: '100%', margin: '24px 0 16px',
-          gap: 12,
-        }}>
-          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-          <span style={{ fontSize: 12, color: '#52525b', whiteSpace: 'nowrap' }}>Of inloggen met</span>
-          <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-        </div>
-
-        {/* Social buttons */}
-        <div style={{ display: 'flex', gap: 10, width: '100%' }}>
-          {[
-            { src: 'https://www.svgrepo.com/show/475656/google-color.svg', alt: 'Google' },
-            { src: 'https://www.svgrepo.com/show/448224/facebook.svg',     alt: 'Facebook' },
-            { src: 'https://www.svgrepo.com/show/511330/apple-173.svg',    alt: 'Apple' },
-          ].map(({ src, alt }) => (
+        {/* ── FORGOT VIEW ── */}
+        {view === 'forgot' && (
+          <>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: `rgba(${r},${g},${b},0.1)`, border: `1px solid rgba(${r},${g},${b},0.2)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+            }}>
+              <Mail size={22} color={accent} strokeWidth={1.8} />
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f4f4f5', textAlign: 'center', marginBottom: 8 }}>
+              Wachtwoord vergeten
+            </h1>
+            <p style={{ fontSize: 13, color: '#71717a', textAlign: 'center', lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
+              Vul je e-mailadres in en we sturen je een link om je wachtwoord opnieuw in te stellen.
+            </p>
+            <form onSubmit={handleForgot} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ position: 'relative' }}>
+                <span style={iconStyle}><Mail size={15} strokeWidth={1.8} /></span>
+                <input
+                  type="email"
+                  placeholder="E-mailadres"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
+                  onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+                  style={inputStyle}
+                  autoFocus
+                />
+              </div>
+              {error && <span style={{ fontSize: 12, color: '#ef4444' }}>{error}</span>}
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  marginTop: 4, width: '100%', padding: '13px',
+                  background: accent, border: 'none', borderRadius: 12,
+                  color: '#fff', fontSize: 15, fontWeight: 600,
+                  fontFamily: 'inherit', cursor: submitting ? 'not-allowed' : 'pointer',
+                  opacity: submitting ? 0.7 : 1, transition: 'filter 0.15s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+                onMouseEnter={e => { if (!submitting) e.currentTarget.style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
+              >
+                {submitting ? (
+                  <>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                    Bezig…
+                  </>
+                ) : 'Verstuur resetlink'}
+              </button>
+            </form>
             <button
-              key={alt}
               type="button"
+              onClick={() => { setView('login'); setError(''); }}
               style={{
-                flex: 1,
-                height: 46,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: '#111318',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12,
-                cursor: 'pointer',
-                transition: 'border-color 0.15s, background 0.15s',
+                marginTop: 20, display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, color: '#71717a', background: 'none',
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
+                transition: 'color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#1a1d24'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#111318'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+              onMouseEnter={e => e.currentTarget.style.color = '#d4d4d8'}
+              onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
             >
-              <img src={src} alt={alt} style={{ width: 20, height: 20 }} />
+              <ArrowLeft size={14} /> Terug naar inloggen
             </button>
-          ))}
-        </div>
+          </>
+        )}
+
+        {/* ── LOGIN VIEW ── */}
+        {view === 'login' && (
+          <>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: '#1a1d24', border: '1px solid rgba(255,255,255,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            }}>
+              <LogIn size={22} color="#f4f4f5" strokeWidth={1.8} />
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f4f4f5', textAlign: 'center', marginBottom: 8, lineHeight: 1.2 }}>
+              Inloggen met e-mail
+            </h1>
+            <p style={{ fontSize: 13, color: '#71717a', textAlign: 'center', lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
+              {isAdmin ? 'Toegang tot het Innovagency beheerderspaneel' : `Toegang tot het ${client.name} dashboard`}
+            </p>
+            <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ position: 'relative' }}>
+                <span style={iconStyle}><Mail size={15} strokeWidth={1.8} /></span>
+                <input
+                  type="email"
+                  placeholder="E-mailadres"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
+                  onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ position: 'relative' }}>
+                <span style={iconStyle}><Lock size={15} strokeWidth={1.8} /></span>
+                <input
+                  type="password"
+                  placeholder="Wachtwoord"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
+                  onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 18 }}>
+                {error
+                  ? <span style={{ fontSize: 12, color: '#ef4444' }}>{error}</span>
+                  : <span />}
+                <button
+                  type="button"
+                  onClick={() => { setView('forgot'); setError(''); }}
+                  style={{
+                    fontSize: 12, fontWeight: 500, color: '#52525b',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: 'inherit', padding: 0, transition: 'color 0.15s', marginLeft: 'auto',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = `rgba(${r},${g},${b},1)`}
+                  onMouseLeave={e => e.currentTarget.style.color = '#52525b'}
+                >
+                  Wachtwoord vergeten?
+                </button>
+              </div>
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  marginTop: 6, width: '100%', padding: '13px',
+                  background: accent, border: 'none', borderRadius: 12,
+                  color: '#fff', fontSize: 15, fontWeight: 600,
+                  fontFamily: 'inherit', cursor: submitting ? 'not-allowed' : 'pointer',
+                  transition: 'filter 0.15s, opacity 0.15s', letterSpacing: '0.01em',
+                  opacity: submitting ? 0.7 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+                onMouseEnter={e => { if (!submitting) e.currentTarget.style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
+              >
+                {submitting ? (
+                  <>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                    Bezig met inloggen…
+                  </>
+                ) : 'Aan de slag'}
+              </button>
+            </form>
+          </>
+        )}
 
       </div>
 
       {/* Below card branding */}
       <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 24 }}>
-        InnovaIgency — Dashboard Platform
+        Innovagency — Dashboard Platform
       </p>
     </div>
   );

@@ -51,13 +51,18 @@ function RootRedirect() {
 export default function App() {
   // Read hash synchronously before Supabase clears it
   const [needsPassword, setNeedsPassword] = useState(
-    () => window.location.hash.includes('type=invite')
+    () => window.location.hash.includes('type=invite') || window.location.hash.includes('type=recovery')
   );
 
   return (
     <AuthProvider>
       <ToastProvider>
-        {needsPassword && <SetPasswordModal onDone={() => setNeedsPassword(false)} />}
+        {needsPassword && (
+          <SetPasswordModal
+            onDone={() => setNeedsPassword(false)}
+            isReset={window.location.hash.includes('type=recovery')}
+          />
+        )}}
         <BrowserRouter>
           <Routes>
             {/* Auth */}
