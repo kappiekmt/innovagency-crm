@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       email,
       options: {
         data: { role, client_id: client_id ?? null },
-        redirectTo: 'https://innovagency.nl',
+        redirectTo: 'https://app.innovagency.nl',
       },
     })
     if (linkError) throw linkError

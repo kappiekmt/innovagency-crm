@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,8 +10,10 @@ import {
   Headphones,
   ChevronLeft,
   LogOut,
+  KeyRound,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard',             active: true,  locked: false },
@@ -23,6 +26,7 @@ const navItems = [
 export default function Sidebar({ client, isMobile = false, isOpen = false, onClose = () => {} }) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [showPwModal, setShowPwModal] = useState(false);
   const color = client?.color ?? '#6C00EE';
   const initials = client?.initials ?? '??';
   const name = client?.name ?? '';
@@ -30,6 +34,12 @@ export default function Sidebar({ client, isMobile = false, isOpen = false, onCl
 
   const inner = (
     <>
+      {showPwModal && (
+        <ChangePasswordModal
+          clientColor={color}
+          onClose={() => setShowPwModal(false)}
+        />
+      )}
       {/* Logo / client name */}
       <div style={{ height: 60, padding: '0 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
@@ -46,7 +56,7 @@ export default function Sidebar({ client, isMobile = false, isOpen = false, onCl
             {name}
           </p>
           <p style={{ fontSize: 10, color: '#71717a', marginTop: 1 }}>
-            by InnovaIgency
+            by Innovagency
           </p>
         </div>
       </div>
@@ -156,6 +166,20 @@ export default function Sidebar({ client, isMobile = false, isOpen = false, onCl
               >
                 <Headphones size={10} />
                 Support
+              </button>
+              <button
+                onClick={() => setShowPwModal(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: 11, color: '#71717a', background: 'none',
+                  border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+                  transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = color}
+                onMouseLeave={e => e.currentTarget.style.color = '#71717a'}
+              >
+                <KeyRound size={10} />
+                Wachtwoord
               </button>
               <button
                 onClick={() => { signOut(); navigate(`/login/${client?.id ?? ''}`); }}
