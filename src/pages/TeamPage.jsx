@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Shield, User, Clock, CheckSquare, AlertCircle, Loader, Mail, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Crown, Shield, User, Clock, CheckSquare, AlertCircle, Loader, Mail, ExternalLink, ChevronDown, ChevronUp, Trash2, ChevronRight } from 'lucide-react';
 import AdminLayout from '../components/AdminLayout';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpbXdxY3FheW5qcnBlcGtmandoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTU5MTU3MiwiZXhwIjoyMDkxMTY3NTcyfQ.GDLpZmiZ8042ErELwA8f7ppKl9X8t2WzP_1U18lNdV0';
@@ -38,10 +39,83 @@ function initials(email) {
   return (email ?? '?').split('@')[0].slice(0, 2).toUpperCase();
 }
 
-function MemberCard({ member, tasks, clients, isMobile }) {
+const CHANGEABLE_ROLES = [
+  { value: 'owner',           label: 'Owner' },
+  { value: 'account_manager', label: 'Account Manager' },
+  { value: 'team_member',     label: 'Team Member' },
+  { value: 'viewer',          label: 'Viewer' },
+];
+
+function RoleDropdown({ currentRole, onSelect, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const rc = ROLE_CONFIG[currentRole] ?? ROLE_CONFIG.account_manager;
+
+  useEffect(() => {
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        disabled={disabled}
+        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '4px 10px', borderRadius: 999, cursor: disabled ? 'default' : 'pointer',
+          background: rc.bg, border: `1px solid ${rc.border}`, color: rc.color,
+          fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+          fontFamily: 'inherit', opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        <rc.icon size={9} />
+        {rc.label}
+        {!disabled && <ChevronRight size={9} style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} />}
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, marginTop: 6, zIndex: 50,
+          background: '#1C2128', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 10, overflow: 'hidden', minWidth: 160, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        }}>
+          {CHANGEABLE_ROLES.map(r => {
+            const rrc = ROLE_CONFIG[r.value];
+            return (
+              <button
+                key={r.value}
+                onClick={e => { e.stopPropagation(); setOpen(false); onSelect(r.value); }}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '9px 14px',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  background: r.value === currentRole ? 'rgba(255,255,255,0.05)' : 'transparent',
+                  border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 12, color: r.value === currentRole ? rrc.color : '#A1A1AA',
+                  fontWeight: r.value === currentRole ? 700 : 400,
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => { if (r.value !== currentRole) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                onMouseLeave={e => { if (r.value !== currentRole) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <rrc.icon size={11} color={rrc.color} />
+                {r.label}
+                {r.value === currentRole && <span style={{ marginLeft: 'auto', fontSize: 10, color: rrc.color }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MemberCard({ member, tasks, clients, isMobile, isOwner, isSelf, onRoleChange, onDelete }) {
   const [expanded, setExpanded] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const navigate = useNavigate();
-  const rc = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.admin;
+  const rc = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.account_manager;
   const RoleIcon = rc.icon;
 
   const myTasks = tasks.filter(t => t.assignee === member.email);
@@ -82,15 +156,7 @@ function MemberCard({ member, tasks, clients, isMobile }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#F4F4F5' }}>{member.email}</p>
-            <span style={{
-              display: 'flex', alignItems: 'center', gap: 4,
-              fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-              background: rc.bg, color: rc.color, border: `1px solid ${rc.border}`,
-              textTransform: 'uppercase', letterSpacing: '0.05em',
-            }}>
-              <RoleIcon size={9} />
-              {rc.label}
-            </span>
+            {isSelf && <span style={{ fontSize: 10, color: '#52525B', fontStyle: 'italic' }}>jij</span>}
           </div>
           <div style={{ display: 'flex', align: 'center', gap: 16, marginTop: 4, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, color: '#52525B', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -122,6 +188,49 @@ function MemberCard({ member, tasks, clients, isMobile }) {
             <p style={{ fontSize: 9, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Klaar</p>
           </div>
         </div>
+
+        {/* Owner controls */}
+        {isOwner && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <RoleDropdown
+              currentRole={member.role}
+              disabled={isSelf}
+              onSelect={role => onRoleChange(member.id, role)}
+            />
+            {!isSelf && (
+              confirmDelete ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: '#EF4444' }}>Zeker?</span>
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeleting(true); onDelete(member.id).finally(() => { setDeleting(false); setConfirmDelete(false); }); }}
+                    disabled={deleting}
+                    style={{ padding: '4px 10px', borderRadius: 6, background: '#EF4444', border: 'none', color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {deleting ? '...' : 'Ja, verwijder'}
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
+                    style={{ padding: '4px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717A', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    Annuleer
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={e => { e.stopPropagation(); setConfirmDelete(true); }}
+                  style={{
+                    background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#EF4444',
+                    display: 'flex', alignItems: 'center',
+                  }}
+                  title="Gebruiker verwijderen"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )
+            )}
+          </div>
+        )}
 
         {/* Expand toggle */}
         <button
@@ -218,6 +327,10 @@ function MemberCard({ member, tasks, clients, isMobile }) {
 
 export default function TeamPage() {
   const isMobile = useIsMobile();
+  const { session, supaSession } = useAuth();
+  const currentUserId = supaSession?.user?.id;
+  const isOwner = session?.role === 'owner';
+
   const [members, setMembers]   = useState([]);
   const [tasks, setTasks]       = useState([]);
   const [clients, setClients]   = useState([]);
@@ -255,6 +368,21 @@ export default function TeamPage() {
     setTasks(tasksRes.data ?? []);
     setClients(clientsRes.data ?? []);
     setLoading(false);
+  }
+
+  async function handleRoleChange(userId, newRole) {
+    await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
+    setMembers(prev => prev.map(m => m.id === userId ? { ...m, role: newRole } : m));
+  }
+
+  async function handleDelete(userId) {
+    // Delete profile first, then auth user via admin API
+    await supabase.from('profiles').delete().eq('id', userId);
+    await fetch(`https://fimwqcqaynjrpepkfjwh.supabase.co/auth/v1/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` },
+    });
+    setMembers(prev => prev.filter(m => m.id !== userId));
   }
 
   const openTasks  = tasks.filter(t => t.status !== 'done').length;
@@ -298,7 +426,17 @@ export default function TeamPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {members.map(m => (
-              <MemberCard key={m.id} member={m} tasks={tasks} clients={clients} isMobile={isMobile} />
+              <MemberCard
+                key={m.id}
+                member={m}
+                tasks={tasks}
+                clients={clients}
+                isMobile={isMobile}
+                isOwner={isOwner}
+                isSelf={m.id === currentUserId}
+                onRoleChange={handleRoleChange}
+                onDelete={handleDelete}
+              />
             ))}
             {members.length === 0 && (
               <div style={{ textAlign: 'center', padding: 60, color: '#52525B', fontSize: 13 }}>
