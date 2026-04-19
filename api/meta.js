@@ -17,8 +17,8 @@ const MOCK_DATA = {
 };
 
 function clientEnv(clientId, key) {
-  const prefix = clientId ? clientId.toUpperCase().replace(/-/g, '_') + '_' : '';
-  return process.env[`${prefix}${key}`] ?? process.env[key];
+  if (!clientId) return process.env[key] ?? null;
+  return process.env[`${clientId.toUpperCase().replace(/-/g, '_')}_${key}`] ?? null;
 }
 
 export default async function handler(req, res) {
