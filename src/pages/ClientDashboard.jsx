@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
-import { getClient } from '../config/clients';
+import { supabase } from '../lib/supabase';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useMoMData } from '../hooks/useMoMData';
 import { useClientStats } from '../hooks/useClientStats';
@@ -15,6 +15,19 @@ import InsightsPanel from '../components/InsightsPanel';
 import TrendChart from '../components/TrendChart';
 import BudgetDonut from '../components/BudgetDonut';
 import Footer from '../components/Footer';
+
+const PALETTE = ['#6C00EE', '#3B82F6', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#f97316', '#8b5cf6'];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function deriveColor(slug) {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) hash = slug.charCodeAt(i) + ((hash << 5) - hash);
+  return PALETTE[Math.abs(hash) % PALETTE.length];
+}
+
+function deriveInitials(name) {
+  return name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
 
 function Skeleton({ height = 120, delay = 0 }) {
   return (
@@ -37,19 +50,49 @@ const shimmerStyle = `
   }
 `;
 
+function Spinner() {
+  return (
+    <div style={{ minHeight: '100vh', background: '#0a0c10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#3B82F6', animation: 'spin 0.7s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 export default function ClientDashboard() {
   const { clientId } = useParams();
-  const client = getClient(clientId);
+  const [client, setClient] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!clientId) { setLoading(false); return; }
+    // Support both slug-based URLs (admins) and UUID-based URLs (client users)
+    const query = UUID_RE.test(clientId)
+      ? supabase.from('clients').select('*').eq('id', clientId).single()
+      : supabase.from('clients').select('*').eq('slug', clientId).single();
+
+    query.then(({ data }) => {
+      if (data) {
+        setClient({
+          ...data,
+          color: deriveColor(data.slug),
+          initials: deriveInitials(data.name),
+        });
+      }
+      setLoading(false);
+    });
+  }, [clientId]);
+
+  if (loading) return <Spinner />;
   if (!client) return <Navigate to="/" replace />;
 
   return <ClientDashboardInner client={client} />;
 }
 
 function ClientDashboardInner({ client }) {
-  const { data: apiData, isLoading: apiLoading, isError, isMock, lastUpdated, refetch: apiRefetch } = useDashboardData(client.id);
-  const { momData: apiMomData } = useMoMData(client.id);
-  const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.id);
+  const { data: apiData, isLoading: apiLoading, isError, isMock, lastUpdated, refetch: apiRefetch } = useDashboardData(client.slug);
+  const { momData: apiMomData } = useMoMData(client.slug);
+  const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.slug);
   const [period, setPeriod] = useState('Maand');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { session } = useAuth();
@@ -76,7 +119,7 @@ function ClientDashboardInner({ client }) {
             👁 Je bekijkt dit als: <strong>{client.name}</strong>
           </span>
           <button
-            onClick={() => navigate(`/clients/${client.id}`)}
+            onClick={() => navigate(`/clients/${client.slug}`)}
             style={{
               fontSize: 12, color: '#3B82F6', background: 'rgba(59,130,246,0.1)',
               border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6,
