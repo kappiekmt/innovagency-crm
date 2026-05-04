@@ -8,7 +8,6 @@ import MetaSummaryCards from './MetaSummaryCards';
 import MetaSpendChart from './MetaSpendChart';
 import VideoAdsTable from './VideoAdsTable';
 import AdPreviewModal from './AdPreviewModal';
-import MetaInsightsCallouts from './MetaInsightsCallouts';
 import AgencyNotesPanel from './AgencyNotesPanel';
 
 function Skeleton({ h }) {
@@ -148,8 +147,6 @@ export default function MetaAdsTab({ client }) {
               isMobile={isMobile}
             />
           </div>
-
-          <MetaInsightsCallouts ads={data.ads} isMobile={isMobile} />
 
           <MetaSpendChart daily={data.daily} clientColor={client.color} isMobile={isMobile} />
 
