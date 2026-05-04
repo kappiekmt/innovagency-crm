@@ -145,26 +145,15 @@ async function fetchLiveData({ token, accountId, since, until }) {
   const baseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${normalizedId}`;
 
   // 1. List ads filtered to active/paused only.
-  // Pull a wider creative field set so we can detect the video regardless of
-  // creative type (top-level video_id, nested in object_story_spec.video_data,
-  // dynamic creative asset_feed_spec.videos, etc).
-  const creativeFields = [
-    'id',
-    'video_id',
-    'thumbnail_url',
-    'image_url',
-    'object_type',
-    'object_story_spec{video_data{video_id,image_url}}',
-    'asset_feed_spec{videos}',
-  ].join(',');
-
+  // Trimmed creative fields — Meta's data budget is sensitive to nested
+  // expansions. We pick the locations the actual creatives use.
   const adsRaw = await fetchPaginated(`${baseUrl}/ads`, {
     access_token: token,
-    fields: `id,name,effective_status,creative{${creativeFields}}`,
+    fields: 'id,name,effective_status,creative{id,video_id,thumbnail_url,image_url,object_story_spec}',
     filtering: JSON.stringify([
       { field: 'effective_status', operator: 'IN', value: ['ACTIVE', 'PAUSED'] },
     ]),
-    limit: 100,
+    limit: 50,
   });
 
   // Use ALL active/paused ads — Zitcomfort and similar accounts run only
