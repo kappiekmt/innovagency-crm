@@ -1,22 +1,14 @@
 import { useState, useMemo } from 'react';
 import { ArrowUp, ArrowDown, Play } from 'lucide-react';
-import {
-  formatEuro, formatNumber, formatPct,
-  hookRate, statusColor, hookRateColor,
-} from './format';
+import { formatEuro, formatNumber, statusColor } from './format';
 
 const COLUMNS = [
-  { id: 'thumbnail',  label: 'Video',          sortable: false, width: 84,  align: 'left' },
-  { id: 'ad_name',    label: 'Advertentie',    sortable: true,  align: 'left' },
-  { id: 'status',     label: 'Status',         sortable: true,  align: 'left',  width: 100 },
-  { id: 'spend',      label: 'Spend',          sortable: true,  align: 'right' },
-  { id: 'reach',      label: 'Bereik',         sortable: true,  align: 'right' },
-  { id: 'impressions',label: 'Vertoningen',    sortable: true,  align: 'right' },
-  { id: 'cpm',        label: 'CPM',            sortable: true,  align: 'right' },
-  { id: 'hook',       label: 'Hook %',         sortable: true,  align: 'right' },
-  { id: 'ctr',        label: 'CTR',            sortable: true,  align: 'right' },
-  { id: 'results',    label: 'Resultaten',     sortable: true,  align: 'right' },
-  { id: 'cpr',        label: 'Kosten / Result.',sortable: true, align: 'right' },
+  { id: 'thumbnail',  label: 'Video',       sortable: false, width: 84,  align: 'left' },
+  { id: 'ad_name',    label: 'Advertentie', sortable: true,  align: 'left' },
+  { id: 'status',     label: 'Status',      sortable: true,  align: 'left',  width: 100 },
+  { id: 'spend',      label: 'Spend',       sortable: true,  align: 'right' },
+  { id: 'impressions',label: 'Vertoningen', sortable: true,  align: 'right' },
+  { id: 'results',    label: 'Resultaten',  sortable: true,  align: 'right' },
 ];
 
 function Thumbnail({ ad, onOpen }) {
@@ -72,12 +64,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
   const sorted = useMemo(() => {
     const arr = [...ads];
     arr.sort((a, b) => {
-      const get = (x) => {
-        if (sortBy === 'hook') return hookRate(x);
-        if (sortBy === 'cpr') return x.cost_per_result || 0;
-        return x[sortBy];
-      };
-      const av = get(a); const bv = get(b);
+      const av = a[sortBy]; const bv = b[sortBy];
       if (typeof av === 'string') {
         return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
       }
@@ -113,7 +100,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
           width: '100%',
           borderCollapse: 'collapse',
           fontSize: 12.5,
-          minWidth: isMobile ? 900 : 'auto',
+          minWidth: isMobile ? 700 : 'auto',
         }}>
           <thead>
             <tr>
@@ -151,7 +138,6 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
           <tbody>
             {sorted.map((ad, idx) => {
               const sc = statusColor(ad.status);
-              const hr = hookRate(ad);
               return (
                 <tr
                   key={ad.ad_id}
@@ -165,7 +151,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
                   <td style={{ padding: '10px 14px' }}>
                     <Thumbnail ad={ad} onOpen={onOpenAd} />
                   </td>
-                  <td style={{ padding: '10px 14px', color: '#e4e4e7', fontWeight: 500, maxWidth: 260 }}>
+                  <td style={{ padding: '10px 14px', color: '#e4e4e7', fontWeight: 500, maxWidth: 320 }}>
                     <button
                       onClick={() => onOpenAd(ad)}
                       style={{
@@ -189,25 +175,10 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
                     {formatEuro(ad.spend)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatNumber(ad.reach)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
                     {formatNumber(ad.impressions)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatEuro(ad.cpm)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: hookRateColor(hr) }}>
-                    {formatPct(hr, 1)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatPct(ad.ctr, 2)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
                     {formatNumber(ad.results)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatEuro(ad.cost_per_result)}
                   </td>
                 </tr>
               );
@@ -215,7 +186,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
             {sorted.length === 0 && (
               <tr>
                 <td colSpan={COLUMNS.length} style={{ padding: '32px', textAlign: 'center', color: '#71717a', fontSize: 13 }}>
-                  Geen actieve video advertenties gevonden in deze periode.
+                  Geen advertenties gevonden in deze periode.
                 </td>
               </tr>
             )}

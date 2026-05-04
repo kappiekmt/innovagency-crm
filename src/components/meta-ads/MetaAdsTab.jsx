@@ -130,6 +130,7 @@ export default function MetaAdsTab({ client }) {
         <>
           <MetaSummaryCards
             ads={data.ads}
+            accountReach={data.account_reach}
             clientColor={client.color}
             isMobile={isMobile}
           />

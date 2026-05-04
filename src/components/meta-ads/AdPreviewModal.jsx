@@ -3,8 +3,8 @@ import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { X, ExternalLink } from 'lucide-react';
 import {
-  formatEuro, formatNumber, formatPct,
-  hookRate, statusColor, hookRateColor,
+  formatEuro, formatNumber,
+  statusColor,
 } from './format';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -158,7 +158,6 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
 
   if (!ad) return null;
   const sc = statusColor(ad.status);
-  const hr = hookRate(ad);
   const daily = perAdDaily?.[ad.ad_id] ?? [];
 
   return (
@@ -267,15 +266,7 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', columnGap: 22 }}>
                 <MetricRow label="Spend" value={formatEuro(ad.spend)} />
                 <MetricRow label="Vertoningen" value={formatNumber(ad.impressions)} />
-                <MetricRow label="Bereik" value={formatNumber(ad.reach)} />
-                <MetricRow label="Frequentie" value={formatNumber(ad.frequency, 2)} />
-                <MetricRow label="CPM" value={formatEuro(ad.cpm)} />
-                <MetricRow label="CTR" value={formatPct(ad.ctr, 2)} />
-                <MetricRow label="Klikken" value={formatNumber(ad.clicks)} />
-                <MetricRow label="CPC" value={formatEuro(ad.cpc)} />
-                <MetricRow label="Hook rate" value={formatPct(hr, 1)} color={hookRateColor(hr)} />
                 <MetricRow label="Resultaten" value={formatNumber(ad.results)} />
-                <MetricRow label="Kosten / Resultaat" value={formatEuro(ad.cost_per_result)} />
               </div>
             </div>
 

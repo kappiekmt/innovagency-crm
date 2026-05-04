@@ -17,12 +17,10 @@ export default function MetaDateRangePicker({ value, presetId, onChange, clientC
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  const label = (() => {
-    const p = PRESETS.find((x) => x.id === presetId);
-    if (p) return p.label;
-    if (value?.since && value?.until) return `${formatDate(value.since)} – ${formatDate(value.until)}`;
-    return 'Datumbereik';
-  })();
+  const presetLabel = PRESETS.find((x) => x.id === presetId)?.label;
+  const rangeLabel = (value?.since && value?.until)
+    ? `${formatDate(value.since)} – ${formatDate(value.until)}`
+    : null;
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -37,7 +35,12 @@ export default function MetaDateRangePicker({ value, presetId, onChange, clientC
         }}
       >
         <Calendar size={14} />
-        {label}
+        <span>{presetLabel ?? 'Datumbereik'}</span>
+        {rangeLabel && (
+          <span style={{ color: '#71717a', fontWeight: 400, fontSize: 11 }}>
+            · {rangeLabel}
+          </span>
+        )}
         <ChevronDown size={13} style={{ opacity: 0.6 }} />
       </button>
 

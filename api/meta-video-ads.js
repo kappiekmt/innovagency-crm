@@ -198,6 +198,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     ...(videoRaw.find((v) => v.ad_id === row.ad_id) ?? {}),
   }));
 
+  // Daily breakdown for the spend chart.
   const dailyRaw = await fetchPaginated(`${baseUrl}/insights`, {
     access_token: token,
     level: 'account',
@@ -206,6 +207,25 @@ async function fetchLiveData({ token, accountId, since, until }) {
     time_increment: 1,
     limit: 50,
   });
+
+  // Account-level totals (single row, not time-incremented) for deduped reach.
+  // Per-ad reach summed would double-count users seeing multiple ads, so we
+  // pull the account-level number for the summary cards instead.
+  let accountReach = null;
+  try {
+    const accountTotalsRes = await axios.get(`${baseUrl}/insights`, {
+      params: {
+        access_token: token,
+        level: 'account',
+        fields: 'reach',
+        time_range: JSON.stringify({ since, until }),
+      },
+      timeout: 10000,
+    });
+    accountReach = parseInt(accountTotalsRes.data?.data?.[0]?.reach ?? 0, 10) || null;
+  } catch {
+    accountReach = null;
+  }
 
   const insightsIndex = new Map(insightsRaw.map((i) => [i.ad_id, i]));
 
@@ -288,6 +308,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     isMock: false,
     currency: ads[0]?.currency ?? 'EUR',
     date_range: { since, until },
+    account_reach: accountReach,
     ads,
     daily,
     per_ad_daily: {}, // populated lazily by /api/meta-video-ad-detail in v2; modal falls back to mock for now

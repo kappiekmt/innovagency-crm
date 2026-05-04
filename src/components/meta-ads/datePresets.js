@@ -1,3 +1,9 @@
+// Date presets follow Meta Ads Manager convention:
+// - Rolling-window presets end at YESTERDAY (today is incomplete data and
+//   inflates the day count by 1 if included).
+// - "Deze maand" includes today (in-progress month).
+// - "Vorige maand" is the full previous calendar month.
+
 function isoDaysAgo(n) {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - n);
@@ -20,9 +26,9 @@ function endOfLastMonth() {
 }
 
 export const PRESETS = [
-  { id: '7d',   label: 'Laatste 7 dagen',  range: () => ({ since: isoDaysAgo(7),  until: isoDaysAgo(0) }) },
-  { id: '14d',  label: 'Laatste 14 dagen', range: () => ({ since: isoDaysAgo(14), until: isoDaysAgo(0) }) },
-  { id: '30d',  label: 'Laatste 30 dagen', range: () => ({ since: isoDaysAgo(30), until: isoDaysAgo(0) }) },
+  { id: '7d',   label: 'Laatste 7 dagen',  range: () => ({ since: isoDaysAgo(7),  until: isoDaysAgo(1) }) },
+  { id: '14d',  label: 'Laatste 14 dagen', range: () => ({ since: isoDaysAgo(14), until: isoDaysAgo(1) }) },
+  { id: '30d',  label: 'Laatste 30 dagen', range: () => ({ since: isoDaysAgo(30), until: isoDaysAgo(1) }) },
   { id: 'mtd',  label: 'Deze maand',       range: () => ({ since: startOfThisMonth(),  until: isoDaysAgo(0) }) },
   { id: 'lm',   label: 'Vorige maand',     range: () => ({ since: startOfLastMonth(),  until: endOfLastMonth() }) },
 ];
