@@ -31,12 +31,23 @@ export default function LoginPage() {
     else if (session.clientId) navigate(`/client/${session.clientId}`, { replace: true });
   }, [session.role]);
 
+  // Allow login with bare username (e.g. "Zitcomfort") in addition to email.
+  // We append @innovagency.nl when the input has no '@'. Real emails are
+  // passed through unchanged.
+  function normalizeIdentifier(raw) {
+    const trimmed = (raw ?? '').trim();
+    if (!trimmed) return '';
+    if (trimmed.includes('@')) return trimmed.toLowerCase();
+    return `${trimmed.toLowerCase()}@innovagency.nl`;
+  }
+
   async function handleForgot(e) {
     e.preventDefault();
-    if (!email) { setError('Voer je e-mailadres in.'); return; }
+    const id = normalizeIdentifier(email);
+    if (!id) { setError('Voer je gebruikersnaam of e-mailadres in.'); return; }
     setError('');
     setSubmitting(true);
-    await supabase.auth.resetPasswordForEmail(email, {
+    await supabase.auth.resetPasswordForEmail(id, {
       redirectTo: 'https://app.innovagency.nl/reset-password',
     });
     setSubmitting(false);
@@ -45,16 +56,16 @@ export default function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!email || !password) { setError('Vul je e-mailadres en wachtwoord in.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Voer een geldig e-mailadres in.'); return; }
+    const id = normalizeIdentifier(email);
+    if (!id || !password) { setError('Vul je gebruikersnaam en wachtwoord in.'); return; }
     setError('');
     setSubmitting(true);
     try {
-      await signIn(email, password);
+      await signIn(id, password);
       // Navigate immediately — ProtectedRoute will wait for profile to load
       if (!clientId) navigate('/dashboard', { replace: true });
       else navigate(`/client/${clientId}`, { replace: true });
-    } catch (err) {
+    } catch {
       setError('Onjuiste inloggegevens. Probeer het opnieuw.');
       setSubmitting(false);
     }
@@ -163,8 +174,11 @@ export default function LoginPage() {
               <div style={{ position: 'relative' }}>
                 <span style={iconStyle}><Mail size={15} strokeWidth={1.8} /></span>
                 <input
-                  type="email"
-                  placeholder="E-mailadres"
+                  type="text"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="Gebruikersnaam of e-mailadres"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
@@ -234,8 +248,11 @@ export default function LoginPage() {
               <div style={{ position: 'relative' }}>
                 <span style={iconStyle}><Mail size={15} strokeWidth={1.8} /></span>
                 <input
-                  type="email"
-                  placeholder="E-mailadres"
+                  type="text"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="Gebruikersnaam of e-mailadres"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   onFocus={e => e.target.style.borderColor = `rgba(${r},${g},${b},0.55)`}
