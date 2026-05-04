@@ -140,7 +140,9 @@ async function fetchPaginated(url, params) {
 }
 
 async function fetchLiveData({ token, accountId, since, until }) {
-  const baseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${accountId}`;
+  // Meta requires the `act_` prefix on ad account IDs. Add it if missing.
+  const normalizedId = accountId.startsWith('act_') ? accountId : `act_${accountId}`;
+  const baseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${normalizedId}`;
 
   // 1. List ads + creative info, filter to active video creatives
   const adsRaw = await fetchPaginated(`${baseUrl}/ads`, {
