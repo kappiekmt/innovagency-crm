@@ -304,6 +304,16 @@ async function fetchLiveData({ token, accountId, since, until }) {
     ),
   }));
 
+  // DEBUG: aggregate all unique action_types across all ads so we can see
+  // what Meta returns and identify which to count as "Results".
+  const actionTypeTotals = {};
+  scalarRaw.forEach((row) => {
+    (row.actions ?? []).forEach((a) => {
+      actionTypeTotals[a.action_type] =
+        (actionTypeTotals[a.action_type] ?? 0) + parseFloat(a.value ?? 0);
+    });
+  });
+
   return {
     isMock: false,
     currency: ads[0]?.currency ?? 'EUR',
@@ -317,6 +327,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
       video_ads_found: videoAds.length,
       insights_rows_scalar: scalarRaw.length,
       insights_rows_video: videoRaw.length,
+      action_type_totals: actionTypeTotals,
     },
   };
 }
