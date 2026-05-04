@@ -27,7 +27,7 @@ export default function MetaAdsTab({ client }) {
   const [openAd, setOpenAd] = useState(null);
   const [statusFilter, setStatusFilter] = useState('ACTIVE');
 
-  const { data, isLoading, isError, isMock, lastUpdated, refetch } = useMetaVideoAds(client.slug, dateRange);
+  const { data, isLoading, isError, errorMessage, isMock, lastUpdated, refetch } = useMetaVideoAds(client.slug, dateRange);
 
   const filteredAds = useMemo(() => {
     if (!data?.ads) return [];
@@ -115,6 +115,11 @@ export default function MetaAdsTab({ client }) {
           fontSize: 13, color: '#fca5a5',
         }}>
           Data tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw.
+          {errorMessage && (
+            <div style={{ fontSize: 11, color: '#71717a', marginTop: 6, fontFamily: 'monospace' }}>
+              ({errorMessage})
+            </div>
+          )}
         </div>
       )}
 
