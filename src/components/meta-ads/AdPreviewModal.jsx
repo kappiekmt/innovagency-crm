@@ -197,39 +197,33 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
             <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', margin: '0 0 10px 0' }}>
               {ad.ad_name}
             </h2>
-            {!ad.ad_id?.startsWith('mock_') && (
+            {!ad.ad_id?.startsWith('mock_') && ad.page_id && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {ad.page_id && (
-                  <a
-                    href={`https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=NL&view_all_page_id=${ad.page_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      background: 'rgba(24,119,242,0.12)',
-                      border: '1px solid rgba(24,119,242,0.30)',
-                      color: '#60a5fa',
-                      borderRadius: 7, padding: '5px 11px',
-                      fontSize: 11.5, fontWeight: 600, textDecoration: 'none',
-                    }}
-                  >
-                    <ExternalLink size={11} /> Bekijk in Ads Library
-                  </a>
-                )}
                 <a
-                  href={`https://business.facebook.com/adsmanager/manage/ads?selected_ad_ids=${ad.ad_id}`}
+                  href={(() => {
+                    const params = new URLSearchParams({
+                      active_status: 'all',
+                      ad_type: 'all',
+                      country: 'NL',
+                      view_all_page_id: ad.page_id,
+                      search_type: 'keyword_unordered',
+                      media_type: 'all',
+                      q: ad.ad_name ?? '',
+                    });
+                    return `https://www.facebook.com/ads/library/?${params.toString()}`;
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    color: '#a1a1aa',
+                    background: 'rgba(24,119,242,0.12)',
+                    border: '1px solid rgba(24,119,242,0.30)',
+                    color: '#60a5fa',
                     borderRadius: 7, padding: '5px 11px',
                     fontSize: 11.5, fontWeight: 600, textDecoration: 'none',
                   }}
                 >
-                  <ExternalLink size={11} /> Open in Ads Manager
+                  <ExternalLink size={11} /> Bekijk in Ads Library
                 </a>
               </div>
             )}
