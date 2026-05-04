@@ -197,21 +197,10 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
             <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', margin: '0 0 10px 0' }}>
               {ad.ad_name}
             </h2>
-            {!ad.ad_id?.startsWith('mock_') && ad.page_id && (
+            {!ad.ad_id?.startsWith('mock_') && (ad.preview_url || ad.video_id) && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <a
-                  href={(() => {
-                    const params = new URLSearchParams({
-                      active_status: 'all',
-                      ad_type: 'all',
-                      country: 'NL',
-                      view_all_page_id: ad.page_id,
-                      search_type: 'keyword_unordered',
-                      media_type: 'all',
-                      q: ad.ad_name ?? '',
-                    });
-                    return `https://www.facebook.com/ads/library/?${params.toString()}`;
-                  })()}
+                  href={ad.preview_url ?? `https://www.facebook.com/watch/?v=${ad.video_id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -223,7 +212,7 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
                     fontSize: 11.5, fontWeight: 600, textDecoration: 'none',
                   }}
                 >
-                  <ExternalLink size={11} /> Bekijk in Ads Library
+                  <ExternalLink size={11} /> Open video
                 </a>
               </div>
             )}
