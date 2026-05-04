@@ -3,7 +3,7 @@
 
 create table if not exists agency_notes (
   id uuid primary key default gen_random_uuid(),
-  client_slug text not null,         -- matches src/config/clients.js id
+  client_slug text not null,
   context text not null default 'meta_video_ads',
   content text not null default '',
   updated_at timestamptz not null default now(),
@@ -15,7 +15,7 @@ create index if not exists agency_notes_client_idx on agency_notes (client_slug)
 
 alter table agency_notes enable row level security;
 
--- Admins (any authenticated profile with role admin/owner/account_manager) can read & write.
+-- Internal team can read and write all notes.
 drop policy if exists agency_notes_admin_all on agency_notes;
 create policy agency_notes_admin_all on agency_notes
   for all
@@ -35,15 +35,17 @@ create policy agency_notes_admin_all on agency_notes
     )
   );
 
--- Clients can read notes for their own client_slug only (read-only).
+-- Clients can read their own notes only.
 drop policy if exists agency_notes_client_read on agency_notes;
 create policy agency_notes_client_read on agency_notes
   for select
   to authenticated
   using (
     exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.client_slug = agency_notes.client_slug
+      select 1
+      from profiles p
+      join clients c on c.id::text = p.client_id::text
+      where p.id = auth.uid()
+        and c.slug = agency_notes.client_slug
     )
   );
