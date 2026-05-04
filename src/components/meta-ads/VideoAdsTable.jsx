@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { ArrowUp, ArrowDown, Play } from 'lucide-react';
 import {
   formatEuro, formatNumber, formatPct,
-  hookRate, holdRate, statusColor, hookRateColor, holdRateColor,
+  hookRate, statusColor, hookRateColor,
 } from './format';
 
 const COLUMNS = [
@@ -10,11 +10,10 @@ const COLUMNS = [
   { id: 'ad_name',    label: 'Advertentie',    sortable: true,  align: 'left' },
   { id: 'status',     label: 'Status',         sortable: true,  align: 'left',  width: 100 },
   { id: 'spend',      label: 'Spend',          sortable: true,  align: 'right' },
-  { id: 'impressions',label: 'Vertoningen',    sortable: true,  align: 'right' },
   { id: 'reach',      label: 'Bereik',         sortable: true,  align: 'right' },
+  { id: 'impressions',label: 'Vertoningen',    sortable: true,  align: 'right' },
   { id: 'cpm',        label: 'CPM',            sortable: true,  align: 'right' },
   { id: 'hook',       label: 'Hook %',         sortable: true,  align: 'right' },
-  { id: 'hold',       label: 'Hold %',         sortable: true,  align: 'right' },
   { id: 'ctr',        label: 'CTR',            sortable: true,  align: 'right' },
   { id: 'results',    label: 'Resultaten',     sortable: true,  align: 'right' },
   { id: 'cpr',        label: 'Kosten / Result.',sortable: true, align: 'right' },
@@ -75,7 +74,6 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
     arr.sort((a, b) => {
       const get = (x) => {
         if (sortBy === 'hook') return hookRate(x);
-        if (sortBy === 'hold') return holdRate(x);
         if (sortBy === 'cpr') return x.cost_per_result || 0;
         return x[sortBy];
       };
@@ -154,7 +152,6 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
             {sorted.map((ad, idx) => {
               const sc = statusColor(ad.status);
               const hr = hookRate(ad);
-              const hldr = holdRate(ad);
               return (
                 <tr
                   key={ad.ad_id}
@@ -192,19 +189,16 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
                     {formatEuro(ad.spend)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatNumber(ad.impressions)}
+                    {formatNumber(ad.reach)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
-                    {formatNumber(ad.reach)}
+                    {formatNumber(ad.impressions)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
                     {formatEuro(ad.cpm)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: hookRateColor(hr) }}>
                     {formatPct(hr, 1)}
-                  </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: holdRateColor(hldr) }}>
-                    {formatPct(hldr, 1)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'right', color: '#d4d4d8' }}>
                     {formatPct(ad.ctr, 2)}

@@ -11,18 +11,6 @@ import AdPreviewModal from './AdPreviewModal';
 import MetaInsightsCallouts from './MetaInsightsCallouts';
 import AgencyNotesPanel from './AgencyNotesPanel';
 
-function previousRange(since, until) {
-  const sinceD = new Date(since);
-  const untilD = new Date(until);
-  const days = Math.round((untilD - sinceD) / 86400000) + 1;
-  const prevUntil = new Date(sinceD); prevUntil.setUTCDate(prevUntil.getUTCDate() - 1);
-  const prevSince = new Date(prevUntil); prevSince.setUTCDate(prevSince.getUTCDate() - (days - 1));
-  return {
-    since: prevSince.toISOString().split('T')[0],
-    until: prevUntil.toISOString().split('T')[0],
-  };
-}
-
 function Skeleton({ h }) {
   return <div style={{
     height: h, borderRadius: 14,
@@ -40,8 +28,6 @@ export default function MetaAdsTab({ client }) {
   const [statusFilter, setStatusFilter] = useState('ACTIVE');
 
   const { data, isLoading, isError, isMock, lastUpdated, refetch } = useMetaVideoAds(client.slug, dateRange);
-  const prevRange = useMemo(() => previousRange(dateRange.since, dateRange.until), [dateRange]);
-  const prev = useMetaVideoAds(client.slug, prevRange);
 
   const filteredAds = useMemo(() => {
     if (!data?.ads) return [];
@@ -90,7 +76,7 @@ export default function MetaAdsTab({ client }) {
             clientColor={client.color}
           />
           <button
-            onClick={() => { refetch(); prev.refetch(); }}
+            onClick={() => refetch()}
             disabled={isLoading}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -144,7 +130,6 @@ export default function MetaAdsTab({ client }) {
         <>
           <MetaSummaryCards
             ads={data.ads}
-            prevDaily={prev.data?.daily}
             clientColor={client.color}
             isMobile={isMobile}
           />

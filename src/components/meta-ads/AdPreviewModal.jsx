@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { X, ExternalLink } from 'lucide-react';
 import {
   formatEuro, formatNumber, formatPct,
-  hookRate, holdRate, statusColor, hookRateColor, holdRateColor,
+  hookRate, statusColor, hookRateColor,
 } from './format';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -159,7 +159,6 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
   if (!ad) return null;
   const sc = statusColor(ad.status);
   const hr = hookRate(ad);
-  const hldr = holdRate(ad);
   const daily = perAdDaily?.[ad.ad_id] ?? [];
 
   return (
@@ -189,16 +188,50 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
           padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.06)',
           gap: 14,
         }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
               <span style={{ padding: '3px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: sc.bg, color: sc.fg }}>
                 {sc.label}
               </span>
               <span style={{ fontSize: 11, color: '#71717a' }}>Ad ID: {ad.ad_id}</span>
             </div>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', margin: 0 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', margin: '0 0 10px 0' }}>
               {ad.ad_name}
             </h2>
+            {!ad.ad_id?.startsWith('mock_') && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <a
+                  href={`https://www.facebook.com/ads/library/?id=${ad.ad_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(24,119,242,0.12)',
+                    border: '1px solid rgba(24,119,242,0.30)',
+                    color: '#60a5fa',
+                    borderRadius: 7, padding: '5px 11px',
+                    fontSize: 11.5, fontWeight: 600, textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={11} /> Bekijk in Ads Library
+                </a>
+                <a
+                  href={`https://business.facebook.com/adsmanager/manage/ads?selected_ad_ids=${ad.ad_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    color: '#a1a1aa',
+                    borderRadius: 7, padding: '5px 11px',
+                    fontSize: 11.5, fontWeight: 600, textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={11} /> Open in Ads Manager
+                </a>
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -241,47 +274,8 @@ export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, is
                 <MetricRow label="Klikken" value={formatNumber(ad.clicks)} />
                 <MetricRow label="CPC" value={formatEuro(ad.cpc)} />
                 <MetricRow label="Hook rate" value={formatPct(hr, 1)} color={hookRateColor(hr)} />
-                <MetricRow label="Hold rate" value={formatPct(hldr, 1)} color={holdRateColor(hldr)} />
                 <MetricRow label="Resultaten" value={formatNumber(ad.results)} />
                 <MetricRow label="Kosten / Resultaat" value={formatEuro(ad.cost_per_result)} />
-              </div>
-            </div>
-
-            {/* Video retention */}
-            <div>
-              <h3 style={{ fontSize: 11, fontWeight: 500, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                Kijkretentie
-              </h3>
-              <div style={{ display: 'flex', gap: 10 }}>
-                {[
-                  { label: '3s', val: ad.video_3s_views },
-                  { label: '25%', val: ad.p25 },
-                  { label: '50%', val: ad.p50 },
-                  { label: '75%', val: ad.p75 },
-                  { label: '100%', val: ad.p100 },
-                ].map((s) => {
-                  const base = ad.video_3s_views || 1;
-                  const pct = (s.val / base) * 100;
-                  return (
-                    <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{ fontSize: 11, color: '#71717a', marginBottom: 6 }}>{s.label}</div>
-                      <div style={{
-                        height: 70, background: 'rgba(255,255,255,0.04)',
-                        borderRadius: 6, overflow: 'hidden',
-                        display: 'flex', alignItems: 'flex-end',
-                      }}>
-                        <div style={{
-                          width: '100%',
-                          height: `${Math.min(100, Math.max(8, pct))}%`,
-                          background: 'linear-gradient(180deg, #6C00EE, #4c00b3)',
-                        }} />
-                      </div>
-                      <div style={{ fontSize: 11, color: '#d4d4d8', marginTop: 6, fontWeight: 600 }}>
-                        {formatNumber(s.val)}
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </div>
 
