@@ -315,6 +315,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
       ad_name: ad.name,
       status: ad.effective_status,
       video_id: vid,
+      page_id: ad.creative?.object_story_spec?.page_id ?? null,
       thumbnail_url: extractThumbnail(ad, vmeta),
       preview_url: vmeta.source,
       spend: get('spend'),

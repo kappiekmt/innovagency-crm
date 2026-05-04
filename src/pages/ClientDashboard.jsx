@@ -96,13 +96,17 @@ function ClientDashboardInner({ client }) {
   const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.slug);
   const [period, setPeriod] = useState('Maand');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
   // Add a client slug here to enable the Meta Ads video performance tab for them.
   const META_ADS_ENABLED_SLUGS = ['zitcomfort'];
   const hasMetaAds = META_ADS_ENABLED_SLUGS.includes(client.slug);
   const { session } = useAuth();
   const navigate = useNavigate();
   const isAdmin = session?.role === 'admin' || session?.role === 'owner';
+  // Client-role users only see the Meta Ads tab — the Overzicht tab pulls
+  // mock multi-platform data that confuses non-marketers.
+  const isClientUser = ['client', 'client_admin', 'client_member'].includes(session?.role);
+  const showOverview = !isClientUser;
+  const [activeTab, setActiveTab] = useState(() => (showOverview ? 'overview' : 'meta-ads'));
   const isMobile = useIsMobile();
 
   // Use Supabase manually-entered data when available, fall back to API data
@@ -188,7 +192,7 @@ function ClientDashboardInner({ client }) {
           </div>
         )}
 
-        {hasMetaAds && (
+        {hasMetaAds && showOverview && (
           <div style={{
             display: 'flex', gap: 4,
             padding: isMobile ? '0 12px' : '0 24px',
