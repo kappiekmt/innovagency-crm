@@ -94,7 +94,6 @@ function ClientDashboardInner({ client }) {
   const { data: apiData, isLoading: apiLoading, isError, isMock, lastUpdated, refetch: apiRefetch } = useDashboardData(client.slug);
   const { momData: apiMomData } = useMoMData(client.slug);
   const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.slug);
-  const [period, setPeriod] = useState('Maand');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Add a client slug here to enable the Meta Ads video performance tab for them.
   const META_ADS_ENABLED_SLUGS = ['zitcomfort'];
@@ -148,10 +147,7 @@ function ClientDashboardInner({ client }) {
           lastUpdated={lastUpdated}
           onRefetch={refetch}
           isLoading={isLoading}
-          period={period}
-          onPeriodChange={setPeriod}
           clientName={client.name}
-          clientColor={client.color}
           isMobile={isMobile}
           onMenuOpen={() => setSidebarOpen(true)}
         />
