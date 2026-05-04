@@ -91,7 +91,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <h3 style={{ fontSize: 13, fontWeight: 500, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          Video performance · {ads.length} {ads.length === 1 ? 'advertentie' : 'advertenties'}
+          {ads.length} {ads.length === 1 ? 'advertentie' : 'advertenties'}
         </h3>
       </div>
 

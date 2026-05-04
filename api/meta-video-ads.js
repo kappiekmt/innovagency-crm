@@ -144,20 +144,61 @@ async function fetchLiveData({ token, accountId, since, until }) {
   const normalizedId = accountId.startsWith('act_') ? accountId : `act_${accountId}`;
   const baseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${normalizedId}`;
 
-  // 1. List ads filtered to active/paused only — keeps response small
+  // 1. List ads filtered to active/paused only.
+  // Pull a wider creative field set so we can detect the video regardless of
+  // creative type (top-level video_id, nested in object_story_spec.video_data,
+  // dynamic creative asset_feed_spec.videos, etc).
+  const creativeFields = [
+    'id',
+    'video_id',
+    'thumbnail_url',
+    'image_url',
+    'object_type',
+    'object_story_spec{video_data{video_id,image_url}}',
+    'asset_feed_spec{videos}',
+  ].join(',');
+
   const adsRaw = await fetchPaginated(`${baseUrl}/ads`, {
     access_token: token,
-    fields: 'id,name,effective_status,creative{id,video_id,thumbnail_url}',
+    fields: `id,name,effective_status,creative{${creativeFields}}`,
     filtering: JSON.stringify([
       { field: 'effective_status', operator: 'IN', value: ['ACTIVE', 'PAUSED'] },
     ]),
     limit: 100,
   });
 
-  const videoAds = adsRaw.filter((a) => a.creative?.video_id);
+  // Use ALL active/paused ads — Zitcomfort and similar accounts run only
+  // video creatives, but the creative shape varies by campaign type, so
+  // a strict video_id filter misses real video ads. Surface everything;
+  // the agency knows their account doesn't run static creatives in volume.
+  const selectedAds = adsRaw;
 
-  if (videoAds.length === 0) {
-    return { isMock: false, currency: 'EUR', date_range: { since, until }, ads: [], daily: [], per_ad_daily: {} };
+  if (selectedAds.length === 0) {
+    return {
+      isMock: false, currency: 'EUR',
+      date_range: { since, until },
+      account_summary: null,
+      ads: [], daily: [], per_ad_daily: {},
+    };
+  }
+
+  // Extract a video_id from any of the creative shapes Meta uses.
+  function extractVideoId(ad) {
+    const c = ad.creative ?? {};
+    return c.video_id
+      ?? c.object_story_spec?.video_data?.video_id
+      ?? c.asset_feed_spec?.videos?.[0]?.video_id
+      ?? null;
+  }
+
+  function extractThumbnail(ad, vmeta) {
+    const c = ad.creative ?? {};
+    return c.thumbnail_url
+      ?? c.image_url
+      ?? c.object_story_spec?.video_data?.image_url
+      ?? vmeta?.picture
+      ?? vmeta?.thumbnails?.[0]?.uri
+      ?? null;
   }
 
   // 2. Insights at level=ad — split into two calls to stay under Meta's data budget.
@@ -241,8 +282,9 @@ async function fetchLiveData({ token, accountId, since, until }) {
 
   const insightsIndex = new Map(insightsRaw.map((i) => [i.ad_id, i]));
 
-  // 3. Fetch video sources & thumbnails (one call per unique video_id)
-  const videoIds = [...new Set(videoAds.map((a) => a.creative.video_id))];
+  // 3. Fetch video sources & thumbnails (one call per unique video_id we
+  //    can detect across all creative shapes).
+  const videoIds = [...new Set(selectedAds.map(extractVideoId).filter(Boolean))];
   const videoMeta = {};
   await Promise.all(
     videoIds.map(async (vid) => {
@@ -262,10 +304,10 @@ async function fetchLiveData({ token, accountId, since, until }) {
     })
   );
 
-  const ads = videoAds.map((ad) => {
+  const ads = selectedAds.map((ad) => {
     const ins = insightsIndex.get(ad.id) ?? {};
-    const vid = ad.creative.video_id;
-    const vmeta = videoMeta[vid] ?? {};
+    const vid = extractVideoId(ad);
+    const vmeta = vid ? (videoMeta[vid] ?? {}) : {};
     const get = (k) => parseFloat(ins[k] ?? 0);
     const actionVal = (arr, type) =>
       parseFloat((arr ?? []).find((a) => a.action_type === type)?.value ?? 0);
@@ -284,7 +326,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
       ad_name: ad.name,
       status: ad.effective_status,
       video_id: vid,
-      thumbnail_url: ad.creative.thumbnail_url || vmeta.picture || vmeta.thumbnails?.[0]?.uri || null,
+      thumbnail_url: extractThumbnail(ad, vmeta),
       preview_url: vmeta.source,
       spend: get('spend'),
       impressions: get('impressions'),
@@ -336,7 +378,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     per_ad_daily: {}, // populated lazily by /api/meta-video-ad-detail in v2; modal falls back to mock for now
     debug: {
       total_ads_listed: adsRaw.length,
-      video_ads_found: videoAds.length,
+      ads_returned: selectedAds.length,
       insights_rows_scalar: scalarRaw.length,
       insights_rows_video: videoRaw.length,
       action_type_totals: actionTypeTotals,

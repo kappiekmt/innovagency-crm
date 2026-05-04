@@ -59,10 +59,10 @@ export default function MetaAdsTab({ client }) {
       }}>
         <div>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', marginBottom: 2 }}>
-            Meta Ads — Video performance
+            Meta Ads — Performance per advertentie
           </h2>
           <p style={{ fontSize: 12, color: '#71717a' }}>
-            Alle actieve video advertenties van Meta met spend en performance per creative.
+            Alle actieve advertenties van Meta met spend en resultaten per creative.
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
