@@ -144,41 +144,59 @@ async function fetchLiveData({ token, accountId, since, until }) {
   const normalizedId = accountId.startsWith('act_') ? accountId : `act_${accountId}`;
   const baseUrl = `https://graph.facebook.com/${GRAPH_VERSION}/${normalizedId}`;
 
-  // 1. List ads + creative info, filter to active video creatives
+  // 1. List ads filtered to active/paused only — keeps response small
   const adsRaw = await fetchPaginated(`${baseUrl}/ads`, {
     access_token: token,
-    fields: 'id,name,status,effective_status,creative{id,video_id,thumbnail_url}',
-    limit: 200,
+    fields: 'id,name,effective_status,creative{id,video_id,thumbnail_url}',
+    filtering: JSON.stringify([
+      { field: 'effective_status', operator: 'IN', value: ['ACTIVE', 'PAUSED'] },
+    ]),
+    limit: 50,
   });
 
-  const videoAds = adsRaw.filter(
-    (a) => a.creative?.video_id && a.effective_status !== 'DELETED'
-  );
+  const videoAds = adsRaw.filter((a) => a.creative?.video_id);
 
   if (videoAds.length === 0) {
     return { isMock: false, currency: 'EUR', date_range: { since, until }, ads: [], daily: [], per_ad_daily: {} };
   }
 
-  // 2. Insights at level=ad — single batched call covers all ads
-  const insightsFields = [
+  // 2. Insights at level=ad — split into two calls to stay under Meta's data budget.
+  // Call A: scalar metrics. Call B: video action metrics. We then merge by ad_id.
+  const scalarFields = [
     'ad_id', 'ad_name', 'spend', 'impressions', 'reach', 'frequency',
     'cpm', 'ctr', 'cpc', 'clicks', 'actions', 'cost_per_action_type',
-    'video_play_actions', 'video_thruplay_watched_actions',
-    'video_p25_watched_actions', 'video_p50_watched_actions',
-    'video_p75_watched_actions', 'video_p100_watched_actions',
     'date_start', 'date_stop', 'account_currency',
   ].join(',');
 
-  const insightsRaw = await fetchPaginated(`${baseUrl}/insights`, {
+  const videoFields = [
+    'ad_id',
+    'video_play_actions',
+    'video_thruplay_watched_actions',
+    'video_p25_watched_actions',
+    'video_p50_watched_actions',
+    'video_p75_watched_actions',
+    'video_p100_watched_actions',
+  ].join(',');
+
+  const insightsParams = {
     access_token: token,
     level: 'ad',
-    fields: insightsFields,
     time_range: JSON.stringify({ since, until }),
     filtering: JSON.stringify([
       { field: 'ad.effective_status', operator: 'IN', value: ['ACTIVE', 'PAUSED'] },
     ]),
-    limit: 500,
-  });
+    limit: 50,
+  };
+
+  const [scalarRaw, videoRaw] = await Promise.all([
+    fetchPaginated(`${baseUrl}/insights`, { ...insightsParams, fields: scalarFields }),
+    fetchPaginated(`${baseUrl}/insights`, { ...insightsParams, fields: videoFields }),
+  ]);
+
+  const insightsRaw = scalarRaw.map((row) => ({
+    ...row,
+    ...(videoRaw.find((v) => v.ad_id === row.ad_id) ?? {}),
+  }));
 
   const dailyRaw = await fetchPaginated(`${baseUrl}/insights`, {
     access_token: token,
@@ -186,7 +204,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     fields: 'spend,impressions,actions',
     time_range: JSON.stringify({ since, until }),
     time_increment: 1,
-    limit: 500,
+    limit: 50,
   });
 
   const insightsIndex = new Map(insightsRaw.map((i) => [i.ad_id, i]));
