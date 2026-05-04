@@ -208,23 +208,35 @@ async function fetchLiveData({ token, accountId, since, until }) {
     limit: 50,
   });
 
-  // Account-level totals (single row, not time-incremented) for deduped reach.
-  // Per-ad reach summed would double-count users seeing multiple ads, so we
-  // pull the account-level number for the summary cards instead.
-  let accountReach = null;
+  // Account-level totals (single row, not time-incremented).
+  // Used for the summary cards so they match what the user sees in Meta
+  // Ads Manager. Per-ad numbers in the table can be lower because they
+  // exclude non-video ads and unattributed conversions.
+  let accountSummary = null;
   try {
     const accountTotalsRes = await axios.get(`${baseUrl}/insights`, {
       params: {
         access_token: token,
         level: 'account',
-        fields: 'reach',
+        fields: 'spend,impressions,reach,actions',
         time_range: JSON.stringify({ since, until }),
       },
       timeout: 10000,
     });
-    accountReach = parseInt(accountTotalsRes.data?.data?.[0]?.reach ?? 0, 10) || null;
+    const row = accountTotalsRes.data?.data?.[0] ?? {};
+    const acctActionVal = (type) =>
+      parseFloat((row.actions ?? []).find((a) => a.action_type === type)?.value ?? 0);
+    const leadCount = acctActionVal('lead');
+    const purchaseCount = acctActionVal('purchase');
+    accountSummary = {
+      spend: parseFloat(row.spend ?? 0),
+      impressions: parseInt(row.impressions ?? 0, 10),
+      reach: parseInt(row.reach ?? 0, 10),
+      results: purchaseCount || leadCount,
+      result_type: purchaseCount > 0 ? 'purchase' : 'lead',
+    };
   } catch {
-    accountReach = null;
+    accountSummary = null;
   }
 
   const insightsIndex = new Map(insightsRaw.map((i) => [i.ad_id, i]));
@@ -318,7 +330,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     isMock: false,
     currency: ads[0]?.currency ?? 'EUR',
     date_range: { since, until },
-    account_reach: accountReach,
+    account_summary: accountSummary,
     ads,
     daily,
     per_ad_daily: {}, // populated lazily by /api/meta-video-ad-detail in v2; modal falls back to mock for now

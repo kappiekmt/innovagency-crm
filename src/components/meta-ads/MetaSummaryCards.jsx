@@ -16,17 +16,19 @@ function Card({ label, value, accent }) {
   );
 }
 
-export default function MetaSummaryCards({ ads, accountReach, clientColor = '#6C00EE', isMobile }) {
-  const totalSpend = ads.reduce((s, a) => s + (a.spend || 0), 0);
-  const totalImpressions = ads.reduce((s, a) => s + (a.impressions || 0), 0);
-  const totalResults = ads.reduce((s, a) => s + (a.results || 0), 0);
-  // Account-level reach is deduped (one user counted once across all ads).
-  // Falls back to a per-ad sum only if the account-level reach isn't returned.
-  const reachToShow = accountReach ?? ads.reduce((s, a) => s + (a.reach || 0), 0);
+export default function MetaSummaryCards({ ads, accountSummary, clientColor = '#6C00EE', isMobile }) {
+  // Prefer account-level totals (match Meta Ads Manager exactly).
+  // Fall back to summing per-ad numbers if account_summary is unavailable
+  // (e.g. mock data or transient API failure). Per-ad sum understates
+  // because it only covers video ads.
+  const totalSpend       = accountSummary?.spend       ?? ads.reduce((s, a) => s + (a.spend || 0), 0);
+  const totalImpressions = accountSummary?.impressions ?? ads.reduce((s, a) => s + (a.impressions || 0), 0);
+  const totalReach       = accountSummary?.reach       ?? ads.reduce((s, a) => s + (a.reach || 0), 0);
+  const totalResults     = accountSummary?.results     ?? ads.reduce((s, a) => s + (a.results || 0), 0);
 
   const cards = [
     { label: 'Totale Spend', value: formatEuro(totalSpend, 2)     },
-    { label: 'Bereik',       value: formatNumber(reachToShow)     },
+    { label: 'Bereik',       value: formatNumber(totalReach)      },
     { label: 'Vertoningen',  value: formatNumber(totalImpressions) },
     { label: 'Resultaten',   value: formatNumber(totalResults)    },
   ];

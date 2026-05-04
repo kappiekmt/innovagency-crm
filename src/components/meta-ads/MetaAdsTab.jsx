@@ -128,12 +128,21 @@ export default function MetaAdsTab({ client }) {
         </>
       ) : (
         <>
-          <MetaSummaryCards
-            ads={data.ads}
-            accountReach={data.account_reach}
-            clientColor={client.color}
-            isMobile={isMobile}
-          />
+          <div>
+            <div style={{
+              fontSize: 11, color: '#71717a', fontWeight: 500,
+              textTransform: 'uppercase', letterSpacing: '0.07em',
+              marginBottom: 8, paddingLeft: 2,
+            }}>
+              Totalen voor je hele Meta account in deze periode
+            </div>
+            <MetaSummaryCards
+              ads={data.ads}
+              accountSummary={data.account_summary}
+              clientColor={client.color}
+              isMobile={isMobile}
+            />
+          </div>
 
           <MetaInsightsCallouts ads={data.ads} isMobile={isMobile} />
 
