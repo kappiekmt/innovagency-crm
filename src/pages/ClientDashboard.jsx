@@ -97,7 +97,9 @@ function ClientDashboardInner({ client }) {
   const [period, setPeriod] = useState('Maand');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const hasMetaAds = client.features?.metaVideoAds === true;
+  // Add a client slug here to enable the Meta Ads video performance tab for them.
+  const META_ADS_ENABLED_SLUGS = ['zitcomfort'];
+  const hasMetaAds = META_ADS_ENABLED_SLUGS.includes(client.slug);
   const { session } = useAuth();
   const navigate = useNavigate();
   const isAdmin = session?.role === 'admin' || session?.role === 'owner';

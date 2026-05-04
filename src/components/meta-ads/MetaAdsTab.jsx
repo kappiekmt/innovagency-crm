@@ -38,9 +38,9 @@ export default function MetaAdsTab({ client }) {
   const [dateRange, setDateRange] = useState(() => PRESETS.find((p) => p.id === '30d').range());
   const [openAd, setOpenAd] = useState(null);
 
-  const { data, isLoading, isError, isMock, lastUpdated, refetch } = useMetaVideoAds(client.id, dateRange);
+  const { data, isLoading, isError, isMock, lastUpdated, refetch } = useMetaVideoAds(client.slug, dateRange);
   const prevRange = useMemo(() => previousRange(dateRange.since, dateRange.until), [dateRange]);
-  const prev = useMetaVideoAds(client.id, prevRange);
+  const prev = useMetaVideoAds(client.slug, prevRange);
 
   function onPickRange(range, id) {
     setDateRange(range);
@@ -100,8 +100,8 @@ export default function MetaAdsTab({ client }) {
         }}>
           <span>⚠️</span>
           <span>
-            Demo data — voeg <code style={{ background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 3 }}>{client.id.toUpperCase().replace(/-/g, '_')}_META_ACCESS_TOKEN</code>
-            {' '}en <code style={{ background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 3 }}>{client.id.toUpperCase().replace(/-/g, '_')}_META_AD_ACCOUNT_ID</code> toe aan je Vercel env vars voor live data.
+            Demo data — voeg <code style={{ background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 3 }}>{client.slug.toUpperCase().replace(/-/g, '_')}_META_ACCESS_TOKEN</code>
+            {' '}en <code style={{ background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 3 }}>{client.slug.toUpperCase().replace(/-/g, '_')}_META_AD_ACCOUNT_ID</code> toe aan je Vercel env vars voor live data.
           </span>
         </div>
       )}
@@ -143,7 +143,7 @@ export default function MetaAdsTab({ client }) {
             isMobile={isMobile}
           />
 
-          <AgencyNotesPanel clientSlug={client.id} clientColor={client.color} />
+          <AgencyNotesPanel clientSlug={client.slug} clientColor={client.color} />
         </>
       )}
 
