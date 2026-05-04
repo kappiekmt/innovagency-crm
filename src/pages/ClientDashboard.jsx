@@ -15,6 +15,7 @@ import InsightsPanel from '../components/InsightsPanel';
 import TrendChart from '../components/TrendChart';
 import BudgetDonut from '../components/BudgetDonut';
 import Footer from '../components/Footer';
+import MetaAdsTab from '../components/meta-ads/MetaAdsTab';
 
 const PALETTE = ['#6C00EE', '#3B82F6', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#f97316', '#8b5cf6'];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -95,6 +96,8 @@ function ClientDashboardInner({ client }) {
   const { data: supaData, momData: supaMomData, loading: supaLoading, hasData, refetch: supaRefetch } = useClientStats(client.slug);
   const [period, setPeriod] = useState('Maand');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const hasMetaAds = client.features?.metaVideoAds === true;
   const { session } = useAuth();
   const navigate = useNavigate();
   const isAdmin = session?.role === 'admin' || session?.role === 'owner';
@@ -183,8 +186,45 @@ function ClientDashboardInner({ client }) {
           </div>
         )}
 
+        {hasMetaAds && (
+          <div style={{
+            display: 'flex', gap: 4,
+            padding: isMobile ? '0 12px' : '0 24px',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            background: '#0d0f14',
+          }}>
+            {[
+              { id: 'overview', label: 'Overzicht' },
+              { id: 'meta-ads', label: 'Meta Ads' },
+            ].map((t) => {
+              const active = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveTab(t.id)}
+                  style={{
+                    padding: isMobile ? '11px 14px' : '13px 18px',
+                    background: 'transparent', border: 'none',
+                    borderBottom: `2px solid ${active ? client.color : 'transparent'}`,
+                    color: active ? '#f4f4f5' : '#71717a',
+                    fontSize: isMobile ? 12 : 13,
+                    fontWeight: active ? 600 : 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'all 0.15s ease',
+                    marginBottom: -1,
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <main style={{ flex: 1, padding: isMobile ? '16px' : '24px', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 16 }}>
-          {isLoading ? (
+          {activeTab === 'meta-ads' && hasMetaAds ? (
+            <MetaAdsTab client={client} />
+          ) : isLoading ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: isMobile ? 10 : 16 }}>
                 {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={120} delay={i * 80} />)}
