@@ -1,10 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { X } from 'lucide-react';
+import { X, ExternalLink } from 'lucide-react';
 import {
   formatEuro, formatNumber, formatPct,
   hookRate, holdRate, statusColor, hookRateColor, holdRateColor,
 } from './format';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 function MetricRow({ label, value, color }) {
   return (
@@ -15,10 +18,77 @@ function MetricRow({ label, value, color }) {
   );
 }
 
-function VideoPreview({ ad }) {
-  // Real Meta data has preview_url (video source). For mock, we get a sample mp4.
-  // If neither, fall back to an iframe pointed at Meta's /previews if we have it,
-  // or a thumbnail with a "no preview" overlay.
+function VideoPreview({ ad, clientSlug }) {
+  // Strategy:
+  // 1. If we have an iframe URL from Meta /previews → embed it (the real ad preview)
+  // 2. Else if we have a direct video source URL → HTML5 video player
+  // 3. Else show thumbnail + link to Ads Manager
+  const [iframeUrl, setIframeUrl] = useState(null);
+  const [iframeError, setIframeError] = useState(false);
+  const [adsManagerUrl, setAdsManagerUrl] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIframeUrl(null);
+    setIframeError(false);
+    setLoadingPreview(true);
+
+    // Skip fetch for mock data (mock ad_ids start with "mock_")
+    if (ad.ad_id?.startsWith('mock_')) {
+      setLoadingPreview(false);
+      return;
+    }
+
+    const params = new URLSearchParams({ ad_id: ad.ad_id });
+    if (clientSlug) params.set('client', clientSlug);
+
+    axios
+      .get(`${API_BASE}/api/meta-ad-preview?${params.toString()}`, { timeout: 12000 })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.data?.iframeUrl) setIframeUrl(res.data.iframeUrl);
+        else setIframeError(true);
+        if (res.data?.ads_manager_url) setAdsManagerUrl(res.data.ads_manager_url);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setIframeError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPreview(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [ad.ad_id, clientSlug]);
+
+  if (iframeUrl) {
+    return (
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '9 / 16', background: '#000', borderRadius: 10, overflow: 'hidden' }}>
+        <iframe
+          src={iframeUrl}
+          title={ad.ad_name}
+          style={{ width: '100%', height: '100%', border: 'none', background: '#000' }}
+          allow="autoplay; encrypted-media; fullscreen"
+        />
+      </div>
+    );
+  }
+
+  if (loadingPreview) {
+    return (
+      <div style={{
+        width: '100%', aspectRatio: '9 / 16', background: '#0d0f14',
+        borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexDirection: 'column', gap: 12,
+      }}>
+        <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#6C00EE', animation: 'spin 0.7s linear infinite' }} />
+        <div style={{ color: '#71717a', fontSize: 12 }}>Preview laden…</div>
+      </div>
+    );
+  }
+
   if (ad.preview_url) {
     return (
       <video
@@ -29,47 +99,53 @@ function VideoPreview({ ad }) {
         playsInline
         poster={ad.thumbnail_url}
         style={{
-          width: '100%',
-          aspectRatio: '4 / 5',
-          background: '#000',
-          borderRadius: 10,
-          objectFit: 'cover',
+          width: '100%', aspectRatio: '9 / 16',
+          background: '#000', borderRadius: 10, objectFit: 'cover',
         }}
       />
     );
   }
-  if (ad.preview_iframe) {
-    return (
-      <iframe
-        src={ad.preview_iframe}
-        title={ad.ad_name}
-        style={{
-          width: '100%', aspectRatio: '4 / 5',
-          background: '#000', borderRadius: 10, border: 'none',
-        }}
-        allow="autoplay; encrypted-media"
-      />
-    );
-  }
+
+  // Final fallback — thumbnail + Ads Manager link
+  const fallbackUrl = adsManagerUrl ?? `https://business.facebook.com/adsmanager/manage/ads?selected_ad_ids=${ad.ad_id}`;
   return (
     <div style={{
-      width: '100%', aspectRatio: '4 / 5',
-      background: '#000', borderRadius: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'relative',
+      width: '100%', aspectRatio: '9 / 16',
+      background: '#000', borderRadius: 10, overflow: 'hidden',
       backgroundImage: ad.thumbnail_url ? `url(${ad.thumbnail_url})` : undefined,
       backgroundSize: 'cover', backgroundPosition: 'center',
     }}>
       <div style={{
-        background: 'rgba(0,0,0,0.7)', padding: '10px 16px',
-        borderRadius: 8, color: '#d4d4d8', fontSize: 12,
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.85))',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        padding: 20,
       }}>
-        Video preview niet beschikbaar
+        <a
+          href={fallbackUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: '#1877F2', color: '#fff',
+            padding: '10px 18px', borderRadius: 8,
+            fontSize: 13, fontWeight: 600, textDecoration: 'none',
+          }}
+        >
+          <ExternalLink size={14} /> Open in Ads Manager
+        </a>
       </div>
+      {iframeError && (
+        <div style={{ position: 'absolute', top: 12, left: 12, right: 12, fontSize: 11, color: '#fca5a5', background: 'rgba(0,0,0,0.6)', padding: '4px 8px', borderRadius: 4, textAlign: 'center' }}>
+          Embedded preview niet beschikbaar voor deze advertentie
+        </div>
+      )}
     </div>
   );
 }
 
-export default function AdPreviewModal({ ad, perAdDaily, onClose, isMobile }) {
+export default function AdPreviewModal({ ad, perAdDaily, clientSlug, onClose, isMobile }) {
   useEffect(() => {
     function onEsc(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onEsc);
@@ -146,7 +222,7 @@ export default function AdPreviewModal({ ad, perAdDaily, onClose, isMobile }) {
         }}>
           {/* Left: video preview */}
           <div>
-            <VideoPreview ad={ad} />
+            <VideoPreview ad={ad} clientSlug={clientSlug} />
           </div>
 
           {/* Right: metrics + chart */}

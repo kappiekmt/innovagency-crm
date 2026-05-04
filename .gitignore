@@ -28,3 +28,4 @@ bot/.env
 bot/__pycache__/
 bot/*.pyc
 bot/.venv/
+.vercel

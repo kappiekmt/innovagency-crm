@@ -37,10 +37,26 @@ export default function MetaAdsTab({ client }) {
   const [presetId, setPresetId] = useState('30d');
   const [dateRange, setDateRange] = useState(() => PRESETS.find((p) => p.id === '30d').range());
   const [openAd, setOpenAd] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('ACTIVE');
 
   const { data, isLoading, isError, isMock, lastUpdated, refetch } = useMetaVideoAds(client.slug, dateRange);
   const prevRange = useMemo(() => previousRange(dateRange.since, dateRange.until), [dateRange]);
   const prev = useMetaVideoAds(client.slug, prevRange);
+
+  const filteredAds = useMemo(() => {
+    if (!data?.ads) return [];
+    if (statusFilter === 'ALL') return data.ads;
+    return data.ads.filter((a) => a.status === statusFilter);
+  }, [data?.ads, statusFilter]);
+
+  const counts = useMemo(() => {
+    if (!data?.ads) return { ALL: 0, ACTIVE: 0, PAUSED: 0 };
+    return {
+      ALL:    data.ads.length,
+      ACTIVE: data.ads.filter((a) => a.status === 'ACTIVE').length,
+      PAUSED: data.ads.filter((a) => a.status === 'PAUSED').length,
+    };
+  }, [data?.ads]);
 
   function onPickRange(range, id) {
     setDateRange(range);
@@ -137,8 +153,38 @@ export default function MetaAdsTab({ client }) {
 
           <MetaSpendChart daily={data.daily} clientColor={client.color} isMobile={isMobile} />
 
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {[
+              { id: 'ACTIVE', label: 'Actief' },
+              { id: 'PAUSED', label: 'Gepauzeerd' },
+              { id: 'ALL',    label: 'Alle' },
+            ].map((f) => {
+              const active = statusFilter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => setStatusFilter(f.id)}
+                  style={{
+                    padding: '7px 14px', borderRadius: 8,
+                    border: '1px solid',
+                    borderColor: active ? client.color : 'rgba(255,255,255,0.10)',
+                    background: active ? `${client.color}1f` : 'transparent',
+                    color: active ? client.color : '#a1a1aa',
+                    fontSize: 12, fontWeight: active ? 600 : 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  {f.label}
+                  <span style={{ marginLeft: 7, opacity: 0.7, fontSize: 11 }}>
+                    {counts[f.id]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           <VideoAdsTable
-            ads={data.ads}
+            ads={filteredAds}
             onOpenAd={setOpenAd}
             isMobile={isMobile}
           />
@@ -151,6 +197,7 @@ export default function MetaAdsTab({ client }) {
         <AdPreviewModal
           ad={openAd}
           perAdDaily={data?.per_ad_daily}
+          clientSlug={client.slug}
           onClose={() => setOpenAd(null)}
           isMobile={isMobile}
         />

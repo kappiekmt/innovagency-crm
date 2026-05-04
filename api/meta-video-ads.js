@@ -151,7 +151,7 @@ async function fetchLiveData({ token, accountId, since, until }) {
     filtering: JSON.stringify([
       { field: 'effective_status', operator: 'IN', value: ['ACTIVE', 'PAUSED'] },
     ]),
-    limit: 50,
+    limit: 100,
   });
 
   const videoAds = adsRaw.filter((a) => a.creative?.video_id);
@@ -291,6 +291,12 @@ async function fetchLiveData({ token, accountId, since, until }) {
     ads,
     daily,
     per_ad_daily: {}, // populated lazily by /api/meta-video-ad-detail in v2; modal falls back to mock for now
+    debug: {
+      total_ads_listed: adsRaw.length,
+      video_ads_found: videoAds.length,
+      insights_rows_scalar: scalarRaw.length,
+      insights_rows_video: videoRaw.length,
+    },
   };
 }
 
