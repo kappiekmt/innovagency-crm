@@ -32,16 +32,19 @@ export default function MetaDateRangePicker({ value, presetId, onChange, clientC
           border: '1px solid rgba(255,255,255,0.10)',
           borderRadius: 8, padding: '7px 12px', cursor: 'pointer',
           color: '#d4d4d8', fontSize: 12, fontFamily: 'inherit', fontWeight: 500,
+          minWidth: 0, maxWidth: '100%',
         }}
       >
-        <Calendar size={14} />
-        <span>{presetLabel ?? 'Datumbereik'}</span>
-        {rangeLabel && (
-          <span style={{ color: '#71717a', fontWeight: 400, fontSize: 11 }}>
-            · {rangeLabel}
-          </span>
-        )}
-        <ChevronDown size={13} style={{ opacity: 0.6 }} />
+        <Calendar size={14} style={{ flexShrink: 0 }} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {presetLabel ?? 'Datumbereik'}
+          {rangeLabel && (
+            <span style={{ color: '#71717a', fontWeight: 400, fontSize: 11, marginLeft: 6 }}>
+              · {rangeLabel}
+            </span>
+          )}
+        </span>
+        <ChevronDown size={13} style={{ opacity: 0.6, flexShrink: 0 }} />
       </button>
 
       {open && (
@@ -49,7 +52,7 @@ export default function MetaDateRangePicker({ value, presetId, onChange, clientC
           style={{
             position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 20,
             background: '#15181f', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10, padding: 6, minWidth: 200,
+            borderRadius: 10, padding: 6, minWidth: 200, maxWidth: 'calc(100vw - 32px)',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
           }}
         >

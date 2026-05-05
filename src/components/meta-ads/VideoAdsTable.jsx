@@ -57,6 +57,82 @@ function Thumbnail({ ad, onOpen }) {
   );
 }
 
+function MobileAdCard({ ad, onOpen }) {
+  const sc = statusColor(ad.status);
+  return (
+    <button
+      onClick={() => onOpen(ad)}
+      style={{
+        display: 'flex', alignItems: 'stretch', gap: 12,
+        width: '100%', padding: 12,
+        background: 'transparent', border: 'none',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        cursor: 'pointer', fontFamily: 'inherit',
+        textAlign: 'left',
+      }}
+    >
+      <div style={{
+        position: 'relative', width: 64, height: 80,
+        borderRadius: 8, background: '#1a1d24',
+        overflow: 'hidden', flexShrink: 0,
+      }}>
+        {ad.thumbnail_url ? (
+          <img src={ad.thumbnail_url} alt={ad.ad_name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            loading="lazy" />
+        ) : null}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.32)',
+        }}>
+          <div style={{
+            width: 24, height: 24, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Play size={11} fill="#0a0c10" stroke="#0a0c10" style={{ marginLeft: 1 }} />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 6 }}>
+        <div>
+          <div style={{
+            fontSize: 13, fontWeight: 600, color: '#e4e4e7',
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+            lineHeight: 1.3,
+          }}>
+            {ad.ad_name}
+          </div>
+          <span style={{
+            display: 'inline-block', marginTop: 4,
+            padding: '2px 7px', borderRadius: 5,
+            fontSize: 10, fontWeight: 600,
+            background: sc.bg, color: sc.fg,
+          }}>{sc.label}</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: 14, fontSize: 11.5 }}>
+          <div>
+            <div style={{ color: '#71717a', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Spend</div>
+            <div style={{ color: '#f4f4f5', fontWeight: 600 }}>{formatEuro(ad.spend)}</div>
+          </div>
+          <div>
+            <div style={{ color: '#71717a', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Vert.</div>
+            <div style={{ color: '#d4d4d8' }}>{formatNumber(ad.impressions)}</div>
+          </div>
+          <div>
+            <div style={{ color: '#71717a', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Result.</div>
+            <div style={{ color: '#d4d4d8' }}>{formatNumber(ad.results)}</div>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
   const [sortBy, setSortBy] = useState('spend');
   const [sortDir, setSortDir] = useState('desc');
@@ -86,21 +162,33 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
       borderRadius: 14, overflow: 'hidden',
     }}>
       <div style={{
-        padding: '16px 22px',
+        padding: isMobile ? '14px 16px' : '16px 22px',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 10, flexWrap: 'wrap',
       }}>
         <h3 style={{ fontSize: 13, fontWeight: 500, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           {ads.length} {ads.length === 1 ? 'advertentie' : 'advertenties'}
         </h3>
       </div>
 
+      {isMobile ? (
+        <div>
+          {sorted.map((ad) => (
+            <MobileAdCard key={ad.ad_id} ad={ad} onOpen={onOpenAd} />
+          ))}
+          {sorted.length === 0 && (
+            <div style={{ padding: 28, textAlign: 'center', color: '#71717a', fontSize: 13 }}>
+              Geen advertenties gevonden in deze periode.
+            </div>
+          )}
+        </div>
+      ) : (
       <div style={{ overflowX: 'auto' }}>
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
           fontSize: 12.5,
-          minWidth: isMobile ? 700 : 'auto',
         }}>
           <thead>
             <tr>
@@ -193,6 +281,7 @@ export default function VideoAdsTable({ ads, onOpenAd, isMobile }) {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

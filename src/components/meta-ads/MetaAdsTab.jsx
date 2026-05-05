@@ -53,21 +53,29 @@ export default function MetaAdsTab({ client }) {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {/* Toolbar */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'center',
+        justifyContent: 'space-between',
         flexWrap: 'wrap', gap: 10,
       }}>
         <div>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', marginBottom: 2 }}>
+          <h2 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, color: '#f4f4f5', marginBottom: 2 }}>
             Meta Ads — Performance per advertentie
           </h2>
           <p style={{ fontSize: 12, color: '#71717a' }}>
             Alle actieve advertenties van Meta met spend en resultaten per creative.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: '#71717a', display: isMobile ? 'none' : 'inline' }}>
-            Bijgewerkt: {lastUpdated ? lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '—'}
-          </span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          justifyContent: isMobile ? 'space-between' : 'flex-end',
+        }}>
+          {!isMobile && (
+            <span style={{ fontSize: 11, color: '#71717a' }}>
+              Bijgewerkt: {lastUpdated ? lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '—'}
+            </span>
+          )}
           <MetaDateRangePicker
             value={dateRange}
             presetId={presetId}
@@ -124,11 +132,11 @@ export default function MetaAdsTab({ client }) {
 
       {isLoading || !data ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(6,1fr)', gap: isMobile ? 10 : 14 }}>
-            {[0,1,2,3,4,5].map((i) => <Skeleton key={i} h={92} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
+            {[0, 1].map((i) => <Skeleton key={i} h={104} />)}
           </div>
-          <Skeleton h={300} />
-          <Skeleton h={420} />
+          <Skeleton h={isMobile ? 240 : 300} />
+          <Skeleton h={isMobile ? 360 : 420} />
         </>
       ) : (
         <>
