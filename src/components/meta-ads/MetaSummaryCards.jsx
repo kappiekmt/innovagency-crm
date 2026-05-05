@@ -18,25 +18,21 @@ function Card({ label, value, accent }) {
 
 export default function MetaSummaryCards({ ads, accountSummary, clientColor = '#6C00EE', isMobile }) {
   // Prefer account-level totals (match Meta Ads Manager exactly).
-  // Fall back to summing per-ad numbers if account_summary is unavailable
-  // (e.g. mock data or transient API failure). Per-ad sum understates
-  // because it only covers video ads.
-  const totalSpend       = accountSummary?.spend       ?? ads.reduce((s, a) => s + (a.spend || 0), 0);
+  // Fall back to summing per-ad numbers if account_summary is unavailable.
   const totalImpressions = accountSummary?.impressions ?? ads.reduce((s, a) => s + (a.impressions || 0), 0);
   const totalReach       = accountSummary?.reach       ?? ads.reduce((s, a) => s + (a.reach || 0), 0);
   const totalResults     = accountSummary?.results     ?? ads.reduce((s, a) => s + (a.results || 0), 0);
 
   const cards = [
-    { label: 'Totale Spend', value: formatEuro(totalSpend, 2)     },
-    { label: 'Bereik',       value: formatNumber(totalReach)      },
-    { label: 'Vertoningen',  value: formatNumber(totalImpressions) },
-    { label: 'Resultaten',   value: formatNumber(totalResults)    },
+    { label: 'Bereik',      value: formatNumber(totalReach)      },
+    { label: 'Vertoningen', value: formatNumber(totalImpressions) },
+    { label: 'Resultaten',  value: formatNumber(totalResults)    },
   ];
 
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+      gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
       gap: isMobile ? 10 : 14,
     }}>
       {cards.map((c) => (
