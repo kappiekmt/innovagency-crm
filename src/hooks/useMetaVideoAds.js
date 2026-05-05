@@ -17,14 +17,29 @@ export function useMetaVideoAds(clientId, dateRange) {
     setIsLoading(true);
     setIsError(false);
     setErrorMessage(null);
+    const params = new URLSearchParams();
+    if (clientId) params.set('client', clientId);
+    if (dateRange?.since) params.set('since', dateRange.since);
+    if (dateRange?.until) params.set('until', dateRange.until);
+    const url = `${BASE}/api/meta-video-ads?${params.toString()}`;
+    console.log('[useMetaVideoAds] fetching', url);
+
+    // One retry with a short backoff smooths over Vercel cold starts and
+    // transient Meta Graph API hiccups — the dominant cause of intermittent
+    // errors here. We only retry on timeout / 5xx, never on 4xx.
+    const attempt = async () => axios.get(url, { timeout: 30000 });
+    const isTransient = (err) =>
+      err?.code === 'ECONNABORTED' || (err?.response?.status >= 500);
+
     try {
-      const params = new URLSearchParams();
-      if (clientId) params.set('client', clientId);
-      if (dateRange?.since) params.set('since', dateRange.since);
-      if (dateRange?.until) params.set('until', dateRange.until);
-      const url = `${BASE}/api/meta-video-ads?${params.toString()}`;
-      console.log('[useMetaVideoAds] fetching', url);
-      const res = await axios.get(url, { timeout: 20000 });
+      let res;
+      try {
+        res = await attempt();
+      } catch (err) {
+        if (!isTransient(err)) throw err;
+        await new Promise((r) => setTimeout(r, 800));
+        res = await attempt();
+      }
       if (id !== reqId.current) return;
       setData(res.data);
       setIsMock(!!res.data?.isMock);

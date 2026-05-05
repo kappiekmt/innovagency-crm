@@ -28,15 +28,29 @@ export function useDashboardData(clientId = '') {
     setIsError(false);
     const params = clientId ? `?client=${clientId}` : '';
     try {
-      const [metaRes, gadsRes, ga4Res] = await Promise.all([
-        axios.get(`${BASE}/api/meta${params}`,        { timeout: 10000 }),
-        axios.get(`${BASE}/api/google-ads${params}`,  { timeout: 10000 }),
-        axios.get(`${BASE}/api/analytics${params}`,   { timeout: 10000 }),
+      const results = await Promise.allSettled([
+        axios.get(`${BASE}/api/meta${params}`,        { timeout: 20000 }),
+        axios.get(`${BASE}/api/google-ads${params}`,  { timeout: 20000 }),
+        axios.get(`${BASE}/api/analytics${params}`,   { timeout: 20000 }),
       ]);
 
-      const meta = metaRes.data;
-      const googleAds = gadsRes.data;
-      const analytics = ga4Res.data;
+      // If every endpoint failed we genuinely can't render — bail to error UI.
+      // Otherwise treat each failed slice as mock so one slow endpoint doesn't
+      // black out the whole dashboard.
+      if (results.every((r) => r.status === 'rejected')) {
+        results.forEach((r, i) => console.error(`[useDashboardData] endpoint ${i} failed:`, r.reason?.message));
+        setIsError(true);
+        return;
+      }
+
+      const sliceOrMock = (r, label) => {
+        if (r.status === 'fulfilled') return r.value.data;
+        console.warn(`[useDashboardData] ${label} failed, using mock fallback:`, r.reason?.message);
+        return { isMock: true };
+      };
+      const meta      = sliceOrMock(results[0], 'meta');
+      const googleAds = sliceOrMock(results[1], 'google-ads');
+      const analytics = sliceOrMock(results[2], 'analytics');
 
       const anyMock = meta.isMock || googleAds.isMock || analytics.isMock;
 
