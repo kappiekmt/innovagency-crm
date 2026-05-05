@@ -106,7 +106,25 @@ export default function LoginPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
+      position: 'relative',
     }}>
+      {/* PZNN logo — subtle, top-right */}
+      <a
+        href="https://pznn.nl"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'absolute',
+          top: 24, right: 24,
+          opacity: 0.55,
+          transition: 'opacity 0.2s ease',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.55'}
+      >
+        <img src="/logo-pznn.svg" alt="PZNN" style={{ height: 22, display: 'block' }} />
+      </a>
+
       {/* Card */}
       <div style={{
         width: '100%',
