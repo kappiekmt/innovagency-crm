@@ -20,11 +20,9 @@ export default function MetaSummaryCards({ ads, accountSummary, clientColor = '#
   // Prefer account-level totals (match Meta Ads Manager exactly).
   // Fall back to summing per-ad numbers if account_summary is unavailable.
   const totalImpressions = accountSummary?.impressions ?? ads.reduce((s, a) => s + (a.impressions || 0), 0);
-  const totalReach       = accountSummary?.reach       ?? ads.reduce((s, a) => s + (a.reach || 0), 0);
   const totalResults     = accountSummary?.results     ?? ads.reduce((s, a) => s + (a.results || 0), 0);
 
   const cards = [
-    { label: 'Bereik',      value: formatNumber(totalReach)      },
     { label: 'Vertoningen', value: formatNumber(totalImpressions) },
     { label: 'Resultaten',  value: formatNumber(totalResults)    },
   ];
@@ -32,7 +30,7 @@ export default function MetaSummaryCards({ ads, accountSummary, clientColor = '#
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)',
       gap: isMobile ? 10 : 14,
     }}>
       {cards.map((c) => (
